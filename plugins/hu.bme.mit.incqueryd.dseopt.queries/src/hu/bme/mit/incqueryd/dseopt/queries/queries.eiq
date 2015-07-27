@@ -1,0 +1,180 @@
+package hu.bme.mit.incqueryd.dseopt.queries
+
+/*import "http://incquery.net/inventory"
+import "http://incquery.net/arch"
+import "http://incquery.net/d/infrastructure"*/
+import "mit.bme.hu.serverpark"
+import "http://www.eclipse.org/emf/2002/Ecore"
+
+pattern NotEndState(serverPark:UsedMachines){
+	neg find endState(serverPark, _, _);
+	
+}
+pattern helper(process: Process){
+	Machines.machineProcesses(machine, process);
+	Process.endStateIp.IP(process, ip1);
+	Machines.IP(machine, ip2);
+	ip1!=ip2;
+	
+}
+
+pattern endState(serverPark:UsedMachines, process:Process, i){
+//		
+	UsedMachines.allMachines(serverPark, _);
+	//UsedMachines.processes(serverPark, process);
+//	notgood == count find helper(serverPark, process, _ip1, _ip2);
+//	check(notgood==0);
+   i == count find helper(process);
+   check(i!=0);
+//	//Number of CPUs is equals
+//	Machines.CPUNum(machine, cpuNum1);
+//	Process.endMachine.CPUNum(process, cpuNum2);
+//	check(cpuNum1 == cpuNum2);
+//	
+//	//MemorySize is equals
+//	Machines.MemorySize(machine, memory1);
+//	Process.endMachine.MemorySize(process, memory2);
+//	check(memory1 == memory2);
+//	
+//	//Brotherprocesses run on the same Machine
+//	Process.brotherProcesses(process, brother);
+//	db == count find machineProcesses(machine, brother);
+//	check(db==0);
+}
+
+//pattern brotherProcessOnDifferentMachine(machine:Machines, brother:Process){
+//	neg find machineProcesses(machine, brother);
+//}
+pattern machineProcesses(machine: Machines, brother: Process){
+	Machines.machineProcesses(machine, brother);
+}
+
+
+
+pattern getMachineMemory(machine:Machines, memory:EInt){
+	Machines.MemorySize(machine, memory);
+}
+
+/*pattern getMachineMemoryold(machine:MachineInstance, memory:EInt){
+	MachineInstance.memoryUnit(machine, unit);
+	check(unit=='GB');
+	MachineInstance.memorySize(machine, memoryinGB);
+	memory == eval(memoryinGB*1024);		
+} or{	
+	MachineInstance.memoryUnit(machine, unit);
+	check(unit=='KB');
+	MachineInstance.memorySize(machine, memory);	
+}*/
+
+
+//freenotnegativ
+
+/* 
+pattern freeMemoryNotNegativold(machineprop: Machines, machine:MachineInstance){
+	neg find freeMemoryNegativ(machineprop, machine);
+}*/
+
+//helper to freeMemoryNotNegativ
+pattern freeMemoryNegativ(machine:Machines){
+	Machines.MemorySize(machine, memory);
+	Machines.UsedMemory(machine, usedMemory);
+	check(usedMemory>memory);
+}
+/*
+pattern freeMemoryNegativold(machineprop: Machines, machine:MachineInstance){
+	find getMachineMemory(machine, memorysize);
+	MachineInstance.ip(machine, ip);
+	Machines.IP(machineprop, ip);
+	Machines.freeMemory(machineprop, usedMem);
+	check(usedMem<memorysize);
+}
+*/
+//process without machine
+pattern processWithoutMachine(process: Process){
+	neg find processWithMachine(process, _);
+}
+//helper to processWithoutMachine
+pattern processWithMachine(process: Process, machine:Machines){
+	Machines.machineProcesses(machine, process);
+}
+
+//a machine can't be stopped and used
+pattern runningOrStopped(serverpark:UsedMachines){
+	find stoppedAndUsedMachines(serverpark, _);
+}
+//helper to runningOrStopped
+pattern stoppedAndUsedMachines(serverpark:UsedMachines, machine: Machines){
+	UsedMachines.running(serverpark, machine);
+	UsedMachines.stopped(serverpark, machine);
+}
+//a machine have to  be in stopped or used
+pattern stoppedOrRunning(serverpark:UsedMachines){
+	find notStoppedOrUsedMachines(serverpark, _);
+}
+pattern runningmachine(serverpark:UsedMachines, machine: Machines){
+	UsedMachines.running(serverpark, machine);
+}
+pattern stoppedmachine(serverpark:UsedMachines, machine: Machines){
+	UsedMachines.stopped(serverpark, machine);
+}
+//helper to stoppedOrRunning
+pattern notStoppedOrUsedMachines(serverpark:UsedMachines, machine: Machines){
+	neg find runningmachine(serverpark, machine);
+	neg find stoppedmachine(serverpark, machine);
+} 
+//or{
+//	Machines(machine);
+//	UsedMachines.stopped(serverpark, machine);
+//}
+
+pattern countProcessesOfaMachine(machine:Machines, process:Process){
+	Machines.machineProcesses(machine, process);
+}
+
+//start Server
+
+pattern startServer(serverpark:UsedMachines, machine: Machines){
+	UsedMachines.stopped(serverpark, machine);
+}
+
+//stop Server
+
+pattern stopServer(serverpark:UsedMachines, machine: Machines){
+	UsedMachines.running(serverpark, machine);
+	N==count find countProcessesOfaMachine(machine, process);
+	check(N==0);
+	
+}
+
+//change Process location
+pattern changeProcessLocation(serverpark:UsedMachines, machine1:Machines, machine2:Machines, process:Process, i){
+	
+	//both machines are running
+	UsedMachines.running(serverpark, machine1);
+	UsedMachines.running(serverpark, machine2);
+	neg find stoppedmachine(serverpark, machine1);
+	neg find stoppedmachine(serverpark, machine2);
+	
+	machine1!=machine2;
+	Process.endStateIp(process, end);
+	machine1!=end;
+	//process belongs to machine1
+	Machines.machineProcesses(machine1, process); 
+	
+	//on the second machine there is enough space
+	Process.size(process, neededMemory);
+	Machines.UsedMemory(machine2, usedMemory);
+	find getMachineMemory(machine2, allMemory);
+	freeMemory == eval(allMemory - usedMemory);
+	check(freeMemory >= neededMemory);
+	
+	find endState(serverPark, _, i);
+}
+
+//allokálás
+//leállítás
+//mozgatás
+
+//célfüggvény = 
+
+//állapotkódoló => lekódoljuk a végsõ modellt mint állapotot

@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Beestrategy
+Bundle-SymbolicName: org.eclipse.viatra.dse.beestrategy
+Bundle-Version: 1.0.0.qualifier
+Export-Package: org.eclipse.viatra.dse.beestrategy,
+ org.eclipse.viatra.dse.beestrategy.createbeestrategy
+Require-Bundle: org.eclipse.viatra.dse.base

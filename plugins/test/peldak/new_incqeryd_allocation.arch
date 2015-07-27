@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ASCII"?>
+<arch:Configuration xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:arch="http://incquery.net/arch" xmlns:recipes="http://www.eclipse.org/incquery/rete/recipes" connectionString="fourstore://trainbenchmark_cluster" coordinatorMachine="//@machines.0" monitoringMachine="//@machines.0">
+  <machines name="10.6.17.189" ip="10.6.17.189">
+    <processes traceInfo="10.6.17.189:2554" port="2554" memory="222"/>
+    <processes traceInfo="10.6.17.189:2555" port="2555" memory="128"/>
+    <processes traceInfo="10.6.17.189:2557" port="2557" memory="128"/>
+    <processes traceInfo="10.6.17.189:2558" port="2558" memory="138"/>
+    <processes traceInfo="10.6.17.189:2559" port="2559" memory="211"/>
+    <processes traceInfo="10.6.17.189:2560" port="2560" memory="128"/>
+  </machines>
+  <machines name="10.6.17.190" ip="10.6.17.190">
+    <processes traceInfo="10.6.17.190:2556" port="2556" memory="128"/>
+    <processes traceInfo="10.6.17.190:2552" port="2552" memory="136"/>
+    <processes traceInfo="10.6.17.190:2553" port="2553" memory="138"/>
+  </machines>
+  <recipes href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#/"/>
+  <mappings process="//@machines.1/@processes.1">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:ProductionRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.0"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.1/@processes.2">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:AntiJoinRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.1"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.0">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.2"/>
+    </roles>
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:TrimmerRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.3"/>
+    </roles>
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UniquenessEnforcerRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.10"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.1">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.4"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.1/@processes.0">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.5"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.2">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:ProductionRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.6"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.3">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.7"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.4">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:BinaryInputRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.8"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.5">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/User/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/SwitchSensor.rdfiq.recipe#//@recipeNodes.9"/>
+    </roles>
+  </mappings>
+</arch:Configuration>

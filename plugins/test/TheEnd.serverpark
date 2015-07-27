@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mit.bme.hu.serverpark:UsedMachines xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark">
+  <runningMachines IP="10.6.17.189" UsedMemory="1367" MemorySize="8192" CPUNum="2" serialNumber="1">
+    <DataTransitionOverhead value="3" serialNumber="1"/>
+    <DataTransitionOverhead value="1" serialNumber="2"/>
+    <DataTransitionOverhead value="1" serialNumber="3"/>
+    <processes id="2553" size="138"/>
+    <processes id="2554" size="222"/>
+    <processes id="2557" size="128"/>
+    <processes id="2558" size="138"/>
+    <processes id="2559" size="221"/>
+    <processes id="2560" size="128"/>
+  </runningMachines>
+  <runningMachines IP="10.6.17.181" MemorySize="4096" CPUNum="1" serialNumber="2">
+    <DataTransitionOverhead value="1" serialNumber="1"/>
+    <DataTransitionOverhead value="3" serialNumber="2"/>
+    <DataTransitionOverhead value="1" serialNumber="3"/>
+    <processes id="2552" size="136"/>
+    <processes id="2555" size="128"/>
+    <processes id="2556" size="128"/>
+  </runningMachines>
+  <runningMachines IP="10.6.17.185" MemorySize="8192" CPUNum="1" serialNumber="3">
+    <DataTransitionOverhead value="1" serialNumber="1"/>
+    <DataTransitionOverhead value="1" serialNumber="2"/>
+    <DataTransitionOverhead value="3" serialNumber="3"/>
+  </runningMachines>
+</mit.bme.hu.serverpark:UsedMachines>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ASCII"?>
+<arch:Configuration xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:arch="http://incquery.net/arch" xmlns:recipes="http://www.eclipse.org/incquery/rete/recipes" connectionString="fourstore://trainbenchmark_cluster" coordinatorMachine="//@machines.0" monitoringMachine="//@machines.0">
+  <machines name="10.6.17.189" ip="10.6.17.189">
+    <processes traceInfo="10.6.17.189:2552" port="2552" memory="128"/>
+    <processes traceInfo="10.6.17.189:2553" port="2553" memory="354"/>
+    <processes traceInfo="10.6.17.189:2554" port="2554" memory="128"/>
+    <processes traceInfo="10.6.17.189:2555" port="2555" memory="128"/>
+    <processes traceInfo="10.6.17.189:2556" port="2556" memory="128"/>
+    <processes traceInfo="10.6.17.189:2557" port="2557" memory="359"/>
+    <processes traceInfo="10.6.17.189:2558" port="2558" memory="364"/>
+    <processes traceInfo="10.6.17.189:2559" port="2559" memory="128"/>
+    <processes traceInfo="10.6.17.189:2560" port="2560" memory="128"/>
+    <processes traceInfo="10.6.17.189:2561" port="2561" memory="669"/>
+    <processes traceInfo="10.6.17.189:2562" port="2562" memory="128"/>
+    <processes traceInfo="10.6.17.189:2563" port="2563" memory="128"/>
+    <processes traceInfo="10.6.17.189:2564" port="2564" memory="128"/>
+    <processes traceInfo="10.6.17.189:2565" port="2565" memory="503"/>
+    <processes traceInfo="10.6.17.189:2566" port="2566" memory="128"/>
+    <processes traceInfo="10.6.17.189:2567" port="2567" memory="128"/>
+    <processes traceInfo="10.6.17.189:2568" port="2568" memory="377"/>
+  </machines>
+  <recipes href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#/"/>
+  <mappings process="//@machines.0/@processes.0">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.0"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.1">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:BinaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.1"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.2">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.2"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.3">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:BinaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.3"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.4">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.4"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.5">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.5"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.6">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.7"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.7">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:ProductionRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.8"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.8">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.9"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.9">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:AntiJoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.10"/>
+    </roles>
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:TrimmerRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.11"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.10">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:BinaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.12"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.11">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:TrimmerRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.6"/>
+    </roles>
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:BinaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.13"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.12">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.14"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.13">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.15"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.14">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:UnaryInputRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.16"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.15">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:ProductionRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.17"/>
+    </roles>
+  </mappings>
+  <mappings process="//@machines.0/@processes.16">
+    <roles xsi:type="arch:ReteRole">
+      <nodeRecipe xsi:type="recipes:JoinRecipe" href="file:/C:/Users/Jozsef/git/incqueryd-allocation/hu.bme.mit.incqueryd.queries/recipes/RouteSensor.rdfiq.recipe#//@recipeNodes.18"/>
+    </roles>
+  </mappings>
+</arch:Configuration>

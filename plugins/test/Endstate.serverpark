@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mit.bme.hu.serverpark:UsedMachines xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark" newAttribute="endstate">
+  <runningMachines IP="hlai" machineProcesses="//@processes.0"/>
+  <runningMachines/>
+  <processes id="ddd" endStateIp="//@runningMachines.0"/>
+</mit.bme.hu.serverpark:UsedMachines>
