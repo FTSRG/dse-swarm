@@ -7,7 +7,7 @@ import org.eclipse.viatra.dse.beestrategy.StupidBee;
 
 public interface ICreateBee extends IStrategy{
 
-
+	public String getID();
 	public Patch createRandomBee();
 
 	public StupidBee createNeighbourBee();

@@ -22,9 +22,16 @@ public class CreateBeeWithDFS implements ICreateBee {
 	private ThreadContext context;
 	private boolean neighbour;
 	private BeeStrategy bs;
+	private StupidBee sb;
 	private DesignSpaceManager dsm;
 	FilterOptions fo = new FilterOptions().nothingIfCut().nothingIfGoal().untraversedOnly();
 	private Patch patch;
+	private String id;
+	private boolean interrupted;
+
+	public boolean isInterrupted() {
+		return interrupted;
+	}
 
 	/**
 	 * It will set ThreadContext and PatchSize (default == 1) if you would like
@@ -38,9 +45,9 @@ public class CreateBeeWithDFS implements ICreateBee {
 		this.dsm = context.getDesignSpaceManager();
 
 	}
-	
-	@Override 
-	public void setPatch(Patch patch){
+
+	@Override
+	public void setPatch(Patch patch) {
 		this.patch = patch;
 	}
 
@@ -55,7 +62,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	@Override
 	public void interruptStrategy() {
-		// TODO Auto-generated method stub
+		this.interrupted = true;
 
 	}
 
@@ -108,6 +115,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		// x3
 		p.setBestfitness(context.calculateFitness());
 		p.setPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
+		this.patch = p;
 		return p;
 	}
 
@@ -132,10 +140,10 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	@Override
 	public StupidBee createNeighbourBee() {
-		 boolean start = true;
+		boolean start = true;
 		Integer deepness = 0;
 		TrajectoryInfo actualState = patch.getPatch().clone();
-		this.setThreadContextTo(patch.getPatch());
+		//this.setThreadContextTo(patch.getPatch());
 
 		// step patchsize many steps
 		for (int i = 0; i < patchSize; i++) {
@@ -151,6 +159,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 			}
 			start = false;
 			context.getDesignSpaceManager().fireActivation(nextTran);
+			patchSize--;
 			deepness++;
 			actualState.addStep(nextTran);
 		}
@@ -158,10 +167,19 @@ public class CreateBeeWithDFS implements ICreateBee {
 		sb.init(actualState, BeeType.Neighbour, context.calculateFitness());
 		TrajectoryFitness tf = new TrajectoryFitness(actualState, context.getLastFitness());
 		sb.setTrajectoryFitness(tf);
-//		patch.getBeeList().add(sb);
-//		this.numberOfActiveBees++;
+		// patch.getBeeList().add(sb);
+		// this.numberOfActiveBees++;
+		//TODO szinkronizálni!!!!!!!!!!
+		this.patch.getBeeList().add(sb);
+		int numberOfActiveBees = this.bs.getNumberOfActiveBees();
+		this.bs.setNumberOfActiveBees(++numberOfActiveBees);
+		this.sb = sb;
+		System.out.println("hali");
+		System.out.println(sb.getActualState().getCurrentState().getId());
+		this.interruptStrategy();
 		return sb;
 	}
+	
 
 	private void setThreadContextTo(TrajectoryInfo patch) {
 		DesignSpaceManager dsm = context.getDesignSpaceManager();
@@ -170,9 +188,11 @@ public class CreateBeeWithDFS implements ICreateBee {
 		}
 		List<ITransition> transitions = patch.getFullTransitionTrajectory();
 		for (ITransition iTransition : transitions) {
+			System.out.print(" allapot " + dsm.getCurrentState().getId() + " ");
 			dsm.fireActivation(iTransition);
+			System.out.println(iTransition.getId() + " " + dsm.getCurrentState().getId());
 		}
-		
+
 	}
 
 	// --------------- getters and setters --------------------
@@ -188,13 +208,35 @@ public class CreateBeeWithDFS implements ICreateBee {
 	@Override
 	public void setStopCond(Object stopcond) {
 		this.patchSize = (Integer) stopcond;
-		
+
 	}
 
 	@Override
 	public void setIfNeighbour(Boolean neighbour) {
 		this.neighbour = neighbour;
+
+	}
+
+	@Override
+	public String getID() {
+		return this.id;
+	}
+
+	public void setBs(BeeStrategy beeStrategy) {
+		this.bs = beeStrategy;
 		
+	}
+	
+	public Patch getPatch() {
+		return patch;
+	}
+	
+	public StupidBee getSb() {
+		return sb;
+	}
+
+	public void setSb(StupidBee sb) {
+		this.sb = sb;
 	}
 
 }

@@ -25,7 +25,6 @@ import org.eclipse.viatra.dse.util.EMFHelper;
 public class BeeStrategy implements IStrategy {
 
 	private ArrayList<Patch> patches;
-	
 
 	private ThreadContext context;
 	private DesignSpaceManager dsm;
@@ -34,17 +33,17 @@ public class BeeStrategy implements IStrategy {
 	private boolean interrupted = false;
 	private ArrayList<Patch> bestpatches;
 	private StopExecutionType set = StopExecutionType.CONTINUE;
-	
+
 	private Integer sitesnum = 1;
 	private int eliteSitesNum = 1;
 	private Integer bestSitesNum = 1;
 	private Integer eliteBeesNum = 1;
-	private Integer otherBeesNum= 1;
+	private Integer otherBeesNum = 1;
 
 	private Integer patchSize = 3;
 	private int numberOfActiveBees = 0;
-	private int numberOfMaxBees  = 2;
-	
+	private int numberOfMaxBees = 2;
+
 	protected ICreateBee randomBeeCreator;
 	protected ICreateBee neighbourBeeCreator;
 	public ConcurrentHashMap<String, TrajectoryInfo> reachedStates;
@@ -62,9 +61,8 @@ public class BeeStrategy implements IStrategy {
 	@Override
 	public void explore() {
 		try {
-		this.exploreown();
-		} 
-		catch (Exception e){
+			this.exploreown();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -220,7 +218,7 @@ public class BeeStrategy implements IStrategy {
 				break;
 		}
 
-		return bestpatches;	
+		return bestpatches;
 	}
 
 	private void selectBestBeeInPatch(Patch patch) {
@@ -251,34 +249,58 @@ public class BeeStrategy implements IStrategy {
 		patch.setBeeList(new ArrayList<StupidBee>());
 
 	}
+
 	/**
-	 * Creates a neighbourBee in a given patch. 
-	 * @param patch: given patch 
-	 * @param patchSize2: size of the trajectory of the neighbourbee
+	 * Creates a neighbourBee in a given patch.
+	 * 
+	 * @param patch:
+	 *            given patch
+	 * @param patchSize2:
+	 *            size of the trajectory of the neighbourbee
 	 * @return
 	 */
 	private StupidBee createNeighbourhoodBee(Patch patch, Integer patchSize2) {
-		//TODO throws exception if neighbourBeeCreator is null, find out how to set variables in ICrateBee strategy impl-s
-		StupidBee sb =null;
+		// TODO throws exception if neighbourBeeCreator is null, find out how to
+		// set variables in ICrateBee strategy impl-s
+		StupidBee sb = null;
 		if (neighbourBeeCreator != null) {
-			//return neighbourBeeCreator.createNeighbourBee(context, patch, patchSize2);
-			//context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true, Strategies.createDFSStrategy(3));
+			CreateBeeWithDFS cbwd = new CreateBeeWithDFS();
+			cbwd.setContext(context);
+			cbwd.setIfNeighbour(true);
+			cbwd.setPatch(patch);
+			cbwd.setStopCond(patchSize2);
+			cbwd.setBs(this);
+			// return neighbourBeeCreator.createNeighbourBee(context, patch,
+			// patchSize2);
+			// context.getGlobalContext().tryStartNewThread(context,
+			// context.getModelRoot(), true, Strategies.createDFSStrategy(3));
 			TrajectoryInfo ti = dsm.getTrajectoryInfo().clone();
-			ExplorerThread et = context.getGlobalContext().tryStartNewThread(context, EMFHelper.clone(context.getModelRoot()), true, Strategies.createDFSStrategy(3));
-			if (et!=null){
-				sb = new StupidBee();				
-				for (Object tran : et.getThreadContext().getDesignSpaceManager().getTrajectoryFromRoot()) {
-					ti.addStep((ITransition) tran); 
-				}
-				sb.init(ti, BeeType.Neighbour, et.getThreadContext().calculateFitness());
-				sb.setTrajectoryFitness(new TrajectoryFitness(et.getThreadContext().getDesignSpaceManager().getTrajectoryInfo(), et.getThreadContext().calculateFitness()));
+			ExplorerThread et = context.getGlobalContext().tryStartNewThread(context,
+					EMFHelper.clone(context.getModelRoot()), true, cbwd);
+			while (et == null || cbwd.isInterrupted() == false) {
+				// sb = new StupidBee();
+				// TrajectoryInfo trajectory =
+				// et.getThreadContext().getDesignSpaceManager().getTrajectoryInfo();
+				// for (Object tran :trajectory.getTransitionTrajectory()) {
+				// ti.addStep((ITransition) tran);
+				// }
+				// sb.init(ti, BeeType.Neighbour,
+				// et.getThreadContext().calculateFitness());
+				// sb.setTrajectoryFitness(new
+				// TrajectoryFitness(et.getThreadContext().getDesignSpaceManager().getTrajectoryInfo(),
+				// et.getThreadContext().calculateFitness()));
 			}
+			sb = cbwd.getSb();
+			System.out.println(sb.getActualState().getCurrentState().getId());
 		}
 		return sb;
 	}
+
 	/**
-	 * Creates a randomBee from the start 
-	 * @param patchSize2: size of the trajectory of the randombee
+	 * Creates a randomBee from the start
+	 * 
+	 * @param patchSize2:
+	 *            size of the trajectory of the randombee
 	 * @return
 	 */
 	private Patch createRandomBee(Integer patchSize2) {
@@ -288,25 +310,26 @@ public class BeeStrategy implements IStrategy {
 		randomBeeCreator.setPatch(p);
 		randomBeeCreator.setStopCond(patchSize2);
 		randomBeeCreator.setIfNeighbour(false);
-		//CreateBeeWithDFS cbwd = (CreateBeeWithDFS) this.randomBeeCreator;
+		// CreateBeeWithDFS cbwd = (CreateBeeWithDFS) this.randomBeeCreator;
 		return this.randomBeeCreator.createRandomBee();
-		
-		
-		//TODO throws exception if randomBeeCreator is null
-		/*Patch p = new Patch();
-		p.setPatch(dsm.getTrajectoryInfo(), context);
-		
-		/*randomBeeCreator.setPatch(p);
-		randomBeeCreator.setStopCond(patchSize2);
-		randomBeeCreator.setIfNeighbour(false);
-		CreateBeeWithDFS cbwd = (CreateBeeWithDFS) this.randomBeeCreator;
-		cbwd.setContext(context);*/
-//		ExplorerThread et = context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true, Strategies.createBFSStrategy());
-//		et.run();
-//		if (randomBeeCreator != null) {
-//			return randomBeeCreator.createRandomBee(patchSize2, context);
-//		}
-	//	return null;
+
+		// TODO throws exception if randomBeeCreator is null
+		/*
+		 * Patch p = new Patch(); p.setPatch(dsm.getTrajectoryInfo(), context);
+		 * 
+		 * /*randomBeeCreator.setPatch(p);
+		 * randomBeeCreator.setStopCond(patchSize2);
+		 * randomBeeCreator.setIfNeighbour(false); CreateBeeWithDFS cbwd =
+		 * (CreateBeeWithDFS) this.randomBeeCreator; cbwd.setContext(context);
+		 */
+		// ExplorerThread et =
+		// context.getGlobalContext().tryStartNewThread(context,
+		// context.getModelRoot(), true, Strategies.createBFSStrategy());
+		// et.run();
+		// if (randomBeeCreator != null) {
+		// return randomBeeCreator.createRandomBee(patchSize2, context);
+		// }
+		// return null;
 	}
 
 	@Override
@@ -314,12 +337,9 @@ public class BeeStrategy implements IStrategy {
 		this.interrupted = true;
 
 	}
-	
-	
-	
-	
-	//---------------getters and setters --------------------
-	
+
+	// ---------------getters and setters --------------------
+
 	public ArrayList<Patch> getPatches() {
 		return patches;
 	}
@@ -455,7 +475,5 @@ public class BeeStrategy implements IStrategy {
 	public void setNeighbourBeeCreator(ICreateBee neighbourBeeCreator) {
 		this.neighbourBeeCreator = neighbourBeeCreator;
 	}
-	
-	
 
 }
