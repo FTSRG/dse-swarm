@@ -32,18 +32,19 @@ public class BeeStrategy implements IStrategy {
 	// new ConcurrentHashMap<TrajectoryInfo, StupidBee>();
 	private volatile ConcurrentLinkedQueue<SearchData> searchablePatches = new ConcurrentLinkedQueue<SearchData>();
 	private volatile ConcurrentLinkedQueue<SearchData> instancesToBeChecked = new ConcurrentLinkedQueue<SearchData>();
+	private volatile ConcurrentHashMap<IState, ReachedStateData> reachedStates = new ConcurrentHashMap<IState, ReachedStateData>();
+	public BeeStratexUtil bsu = new BeeStratexUtil();
 	private ThreadContext context;
 	private DesignSpaceManager dsm;
 	private ISolutionStore solutionStore;
 	private IState startstate;
 	private boolean interrupted = false;
-	private ArrayList<Patch> bestpatches;
+	private ArrayList<Patch> bestpatches ;
 	private StopExecutionType set = StopExecutionType.CONTINUE;
-
 	private Integer sitesnum = 1;
 	private int eliteSitesNum = 1;
-	private Integer bestSitesNum = 1;
-	private Integer eliteBeesNum = 1;
+	private Integer bestSitesNum = 3;
+	private Integer eliteBeesNum = 2;
 	private Integer otherBeesNum = 1;
 
 	private Integer patchSize = 3;
@@ -52,7 +53,6 @@ public class BeeStrategy implements IStrategy {
 
 	protected ICreateBee randomBeeCreator;
 	protected ICreateBee neighbourBeeCreator;
-	public ConcurrentHashMap<String, TrajectoryInfo> reachedStates;
 
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
@@ -102,7 +102,7 @@ public class BeeStrategy implements IStrategy {
 		}
 		getBestPatches(sitesnum);
 		while (interrupted != true) {
-			System.out.println(this.interrupted);
+			//System.out.println(this.interrupted);
 			// select best patches, a better patch has a better best bee, the
 			// other bees does not count
 			this.bestpatches = getBestPatches(sitesnum);
@@ -399,6 +399,7 @@ public class BeeStrategy implements IStrategy {
 			icb.setPatch(null);
 			icb.setStopCond(patchSize2);
 			icb.setIfNeighbour(false);
+			icb.setMainStrategy(this);
 			SearchData sd = new SearchData();
 			sd.setIsneighbour(false);
 			sd.setPatchsize(patchSize2);
@@ -562,5 +563,17 @@ public class BeeStrategy implements IStrategy {
 	public void setNeighbourBeeCreator(ICreateBee neighbourBeeCreator) {
 		this.neighbourBeeCreator = neighbourBeeCreator;
 	}
-
+	
+	public synchronized Double getStateFitness(IState stateCode){
+		return this.reachedStates.get(stateCode).getBestfitness();
+	}
+	
+	public synchronized boolean setNewStateValue(IState stateCode, ReachedStateData rsd){
+		ReachedStateData data = this.reachedStates.get(stateCode);
+		if(data!=null && data.getBestfitness()>rsd.getBestfitness()){
+			return false;
+		}
+		this.reachedStates.put(stateCode, rsd);
+		return true;
+	}
 }

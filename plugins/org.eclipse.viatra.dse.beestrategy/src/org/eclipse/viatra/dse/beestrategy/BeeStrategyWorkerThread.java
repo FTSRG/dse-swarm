@@ -29,13 +29,17 @@ public class BeeStrategyWorkerThread implements IStrategy {
 
 	@Override
 	public void explore() {
+		SearchData entry = null;
 		try{
 		while (!interrupted) {
 			while (searchablePatches == null) {
 			}
 			if (searchablePatches.size() == 0) {
 			} else {
-				SearchData entry = getNewSearch();
+				entry = getNewSearch();
+				while(entry==null){
+					entry = getNewSearch();
+				}
 				IStrategy is = entry.getStrategy();
 				is.initStrategy(context);
 				while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
@@ -59,6 +63,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 			}
 		}
 		}catch(Exception e){
+			System.out.println(entry.getStrategy().toString());
 			e.printStackTrace();
 		}
 

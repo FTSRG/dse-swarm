@@ -14,4 +14,5 @@ public interface ICreateBee extends IStrategy{
 	public void setPatch(Patch patch);
 	public void setStopCond(Object stopcond);
 	public void setIfNeighbour(Boolean neighbour);
+	public void setMainStrategy(IStrategy beeStrategy);
 }

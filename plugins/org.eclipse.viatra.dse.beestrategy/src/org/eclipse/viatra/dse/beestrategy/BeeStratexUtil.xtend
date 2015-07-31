@@ -31,11 +31,12 @@ import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS
 class BeeStratexUtil {
 	private static val magnitude = 20000
 	
-	val Map<StatePath, TrajectoryInfo> reachedStates = new HashMap(magnitude)
+	val Map<TrajectoryInfo, StatePath> reachedStates = new HashMap(magnitude)
 	val Map<TraceInfo, Set<PathStep>> exploredTransitions = new HashMap(magnitude)
 	
 	new() {
 		val x = new StatePath(new CreateBeeWithDFS(), new String(), 1.0, 3)
 	}
+	
 	
 }

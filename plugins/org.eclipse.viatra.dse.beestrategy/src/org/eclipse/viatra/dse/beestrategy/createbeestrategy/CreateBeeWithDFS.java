@@ -5,13 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy;
 import org.eclipse.viatra.dse.beestrategy.Patch;
+import org.eclipse.viatra.dse.beestrategy.ReachedStateData;
 import org.eclipse.viatra.dse.beestrategy.StupidBee;
 import org.eclipse.viatra.dse.beestrategy.StupidBee.BeeType;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
+import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
@@ -72,9 +75,20 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	}
 	
-	public void newStateIsProcessed(boolean isAlreadyTraversed, Fitness fitness, boolean constraintsNotSatisfied) {
-        if (isAlreadyTraversed || constraintsNotSatisfied || (fitness.isSatisifiesHardObjectives())) {
-            context.getDesignSpaceManager().undoLastTransformation();
+	public void newStateIsProcessed(boolean isAlreadyTraversed) {
+		Fitness actualFitness = context.calculateFitness();
+		IState currentState = dsm.getCurrentState();
+        if ((isAlreadyTraversed && bs.getStateFitness(currentState)>10.0)
+        		|| !isAlreadyTraversed) {      
+        	System.out.println(currentState);
+        	ReachedStateData rsd = new ReachedStateData();
+        	rsd.setBestfitness(10.0);
+        	rsd.setBestti(dsm.getTrajectoryInfo());
+        	rsd.setReachedBy(context);
+        	bs.setNewStateValue(currentState, rsd);
+        }
+        if(isAlreadyTraversed){
+        	context.getDesignSpaceManager().undoLastTransformation();
         }
     }
 
@@ -117,6 +131,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 			}
 			// x1
 			dsm.fireActivation(nextTran);
+			newStateIsProcessed(dsm.isNewModelStateAlreadyTraversed());
 			patchSize--;
 			// x2
 		}
@@ -189,7 +204,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		this.patch.getBeeList().add(sb);
 		this.bs.increasenumberOfActiveBees();
 		this.sb = sb;
-		System.out.println("hali");
+		//System.out.println("hali");
 		System.out.println(sb.getActualState().getCurrentState().getId());
 		this.interruptStrategy();
 		return sb;
@@ -252,6 +267,12 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	public void setSb(StupidBee sb) {
 		this.sb = sb;
+	}
+
+	@Override
+	public void setMainStrategy(IStrategy beeStrategy) {
+		this.bs = (BeeStrategy) beeStrategy;
+		
 	}
 
 }

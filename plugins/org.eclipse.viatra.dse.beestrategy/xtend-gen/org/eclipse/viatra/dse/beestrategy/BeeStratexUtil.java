@@ -13,7 +13,7 @@ import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 public class BeeStratexUtil {
   private final static int magnitude = 20000;
   
-  private final Map<StatePath, TrajectoryInfo> reachedStates = new HashMap<StatePath, TrajectoryInfo>(BeeStratexUtil.magnitude);
+  private final Map<TrajectoryInfo, StatePath> reachedStates = new HashMap<TrajectoryInfo, StatePath>(BeeStratexUtil.magnitude);
   
   private final Map<TraceInfo, Set<PathStep>> exploredTransitions = new HashMap<TraceInfo, Set<PathStep>>(BeeStratexUtil.magnitude);
   
