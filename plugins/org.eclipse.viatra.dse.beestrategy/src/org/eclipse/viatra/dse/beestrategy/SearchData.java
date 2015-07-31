@@ -1,18 +1,27 @@
 package org.eclipse.viatra.dse.beestrategy;
 
-import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
 
 public class SearchData {
 	private Patch patch;
-	private IStrategy strategy;
+	private ICreateBee strategy;
 	private Integer patchsize;
 	private Boolean isneighbour;
+	private StupidBee sb;
 
-	public IStrategy getStrategy() {
+	public StupidBee getStupidBee() {
+		return sb;
+	}
+
+	public void setStupidBee(StupidBee sb) {
+		this.sb = sb;
+	}
+
+	public ICreateBee getStrategy() {
 		return strategy;
 	}
 
-	public void setStrategy(IStrategy strategy) {
+	public void setStrategy(ICreateBee strategy) {
 		this.strategy = strategy;
 	}
 

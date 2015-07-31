@@ -10,6 +10,10 @@ public class StupidBee {
         Explorer,
         Neighbour
     }
+		TrajectoryInfo initialState;
+		
+
+
 		//Integer ID;
 		TrajectoryInfo actualState;
 		//it is null if it started from the hive
@@ -95,6 +99,15 @@ public class StupidBee {
 			sb.setTrajectoryFitness(this.trajectoryFitness
 			);
 			return sb;
+		}
+		
+		
+		public TrajectoryInfo getInitialState() {
+			return initialState;
+		}
+
+		public void setInitialState(TrajectoryInfo initialState) {
+			this.initialState = initialState;
 		}
 		
 }

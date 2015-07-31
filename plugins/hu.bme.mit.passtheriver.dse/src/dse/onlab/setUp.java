@@ -136,11 +136,11 @@ public class setUp {
 				
 			}
 		});*/
-		 dse.setMaxNumberOfThreads(2);
+		 dse.setMaxNumberOfThreads(5);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 System.out.println("hali");
 		// bs = new BeeStrategy2();
-		 bs = new BeeStrategy();
+		 bs = new BeeStrategy(3);
 		/* bs.setEliteBeesNum(1);
 		 bs.setEliteSitesNum(1);
 		

@@ -9,12 +9,11 @@ import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
 public class Patch {
-	ArrayList<String> reachedStates = new ArrayList<String>();
 	ArrayList<StupidBee> beeList = new ArrayList<StupidBee>();
-	//
 	TrajectoryInfo patch;
 	Fitness bestfitness;
 	StupidBee bestBee;
+	Integer neighbourbeesnum;
 	
 	
 	public Patch(){

@@ -14,6 +14,7 @@ import org.eclipse.viatra.dse.beestrategy.StupidBee.BeeType;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
+import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
 public class CreateBeeWithDFS implements ICreateBee {
@@ -38,7 +39,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	 * to change patchsize you have to call setpatchsize
 	 */
 	@Override
-	public void initStrategy(ThreadContext context) {
+	public synchronized void initStrategy(ThreadContext context) {
 		this.context = context;
 		if (patchSize == null)
 			patchSize = 1;
@@ -47,7 +48,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	}
 
 	@Override
-	public void setPatch(Patch patch) {
+	public synchronized void setPatch(Patch patch) {
 		this.patch = patch;
 	}
 
@@ -57,14 +58,25 @@ public class CreateBeeWithDFS implements ICreateBee {
 			createRandomBee();
 		}
 
-		createNeighbourBee();
+		else
+			createNeighbourBee();
+		System.out.println("halivege");
+
+		interruptStrategy();
+		// this.notifyAll();
 	}
 
 	@Override
-	public void interruptStrategy() {
+	public synchronized void interruptStrategy() {
 		this.interrupted = true;
 
 	}
+	
+	public void newStateIsProcessed(boolean isAlreadyTraversed, Fitness fitness, boolean constraintsNotSatisfied) {
+        if (isAlreadyTraversed || constraintsNotSatisfied || (fitness.isSatisifiesHardObjectives())) {
+            context.getDesignSpaceManager().undoLastTransformation();
+        }
+    }
 
 	// createRandomBee-be mehetne talan maskepp implementalva
 	// ExplorerThread explorerThread =
@@ -90,7 +102,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	// bs.setNumberOfActiveBees(NumberOfActiveBees++);
 
 	@Override
-	public Patch createRandomBee() {
+	public synchronized Patch createRandomBee() {
 
 		while (dsm.getTrajectoryFromRoot().size() != 0) {
 			dsm.undoLastTransformation();
@@ -119,7 +131,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		return p;
 	}
 
-	private ITransition selectNextTransition() {
+	private synchronized ITransition selectNextTransition() {
 		// if there is a state from here, which were not processed
 		Integer actTranNum = dsm.getTransitionsFromCurrentState(fo).size();
 		if (actTranNum > 0) {
@@ -139,11 +151,11 @@ public class CreateBeeWithDFS implements ICreateBee {
 	}
 
 	@Override
-	public StupidBee createNeighbourBee() {
+	public synchronized StupidBee createNeighbourBee() {
 		boolean start = true;
 		Integer deepness = 0;
 		TrajectoryInfo actualState = patch.getPatch().clone();
-		//this.setThreadContextTo(patch.getPatch());
+		// this.setThreadContextTo(patch.getPatch());
 
 		// step patchsize many steps
 		for (int i = 0; i < patchSize; i++) {
@@ -163,23 +175,26 @@ public class CreateBeeWithDFS implements ICreateBee {
 			deepness++;
 			actualState.addStep(nextTran);
 		}
+		return generateStupidBee(actualState);
+	}
+
+	private synchronized StupidBee generateStupidBee(TrajectoryInfo actualState) {
 		StupidBee sb = new StupidBee();
 		sb.init(actualState, BeeType.Neighbour, context.calculateFitness());
 		TrajectoryFitness tf = new TrajectoryFitness(actualState, context.getLastFitness());
 		sb.setTrajectoryFitness(tf);
 		// patch.getBeeList().add(sb);
 		// this.numberOfActiveBees++;
-		//TODO szinkronizálni!!!!!!!!!!
+		// TODO szinkronizálni!!!!!!!!!!
 		this.patch.getBeeList().add(sb);
-		int numberOfActiveBees = this.bs.getNumberOfActiveBees();
-		this.bs.setNumberOfActiveBees(++numberOfActiveBees);
+		this.bs.increasenumberOfActiveBees();
 		this.sb = sb;
 		System.out.println("hali");
 		System.out.println(sb.getActualState().getCurrentState().getId());
 		this.interruptStrategy();
 		return sb;
+
 	}
-	
 
 	private void setThreadContextTo(TrajectoryInfo patch) {
 		DesignSpaceManager dsm = context.getDesignSpaceManager();
@@ -224,13 +239,13 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	public void setBs(BeeStrategy beeStrategy) {
 		this.bs = beeStrategy;
-		
+
 	}
-	
+
 	public Patch getPatch() {
 		return patch;
 	}
-	
+
 	public StupidBee getSb() {
 		return sb;
 	}
