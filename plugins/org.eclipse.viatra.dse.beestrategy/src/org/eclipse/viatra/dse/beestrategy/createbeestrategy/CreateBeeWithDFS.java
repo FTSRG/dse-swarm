@@ -78,16 +78,18 @@ public class CreateBeeWithDFS implements ICreateBee {
 	public void newStateIsProcessed(boolean isAlreadyTraversed) {
 		Fitness actualFitness = context.calculateFitness();
 		IState currentState = dsm.getCurrentState();
+	
         if ((isAlreadyTraversed && bs.getStateFitness(currentState)>10.0)
-        		|| !isAlreadyTraversed) {      
-        	System.out.println(currentState);
+        		|| !isAlreadyTraversed) {  
         	ReachedStateData rsd = new ReachedStateData();
         	rsd.setBestfitness(10.0);
         	rsd.setBestti(dsm.getTrajectoryInfo());
         	rsd.setReachedBy(context);
         	bs.setNewStateValue(currentState, rsd);
         }
-        if(isAlreadyTraversed){
+        System.out.println(currentState.getId());
+        if(bs.getifTravelsed(currentState)){
+        	System.out.println("vissza");
         	context.getDesignSpaceManager().undoLastTransformation();
         }
     }

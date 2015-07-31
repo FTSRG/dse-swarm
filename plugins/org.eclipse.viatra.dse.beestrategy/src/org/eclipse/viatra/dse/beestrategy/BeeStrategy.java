@@ -568,6 +568,10 @@ public class BeeStrategy implements IStrategy {
 		return this.reachedStates.get(stateCode).getBestfitness();
 	}
 	
+	public synchronized Boolean getifTravelsed(IState stateCode){
+		return this.reachedStates.get(stateCode)!=null;
+	}
+	
 	public synchronized boolean setNewStateValue(IState stateCode, ReachedStateData rsd){
 		ReachedStateData data = this.reachedStates.get(stateCode);
 		if(data!=null && data.getBestfitness()>rsd.getBestfitness()){
