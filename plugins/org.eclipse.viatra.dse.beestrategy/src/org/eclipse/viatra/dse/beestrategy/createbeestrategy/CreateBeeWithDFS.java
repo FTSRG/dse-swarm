@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
@@ -32,6 +33,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	private Patch patch;
 	private String id;
 	private boolean interrupted;
+	private Logger logger = Logger.getLogger(getClass());
 
 	public boolean isInterrupted() {
 		return interrupted;
@@ -47,6 +49,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		if (patchSize == null)
 			patchSize = 1;
 		this.dsm = context.getDesignSpaceManager();
+		logger.debug("Initied");
 
 	}
 
@@ -79,19 +82,22 @@ public class CreateBeeWithDFS implements ICreateBee {
 		Fitness actualFitness = context.calculateFitness();
 		IState currentState = dsm.getCurrentState();
 	
-        if ((isAlreadyTraversed && bs.getStateFitness(currentState)>10.0)
-        		|| !isAlreadyTraversed) {  
+        if (!isAlreadyTraversed) {  
         	ReachedStateData rsd = new ReachedStateData();
+        	System.out.println(currentState.getId());
         	rsd.setBestfitness(10.0);
         	rsd.setBestti(dsm.getTrajectoryInfo());
         	rsd.setReachedBy(context);
         	bs.setNewStateValue(currentState, rsd);
         }
-        System.out.println(currentState.getId());
-        if(bs.getifTravelsed(currentState)){
-        	System.out.println("vissza");
+        if(isAlreadyTraversed){
         	context.getDesignSpaceManager().undoLastTransformation();
         }
+       
+//        if(bs.getifTravelsed(currentState)){
+//        	System.out.println("vissza");
+//        	context.getDesignSpaceManager().undoLastTransformation();
+//        }
     }
 
 	// createRandomBee-be mehetne talan maskepp implementalva

@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.incquery.runtime.exception.IncQueryException;
 import org.eclipse.viatra.dse.api.Solution;
 import org.eclipse.viatra.dse.api.SolutionTrajectory;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
 import org.junit.Test;
 
 
@@ -19,7 +20,7 @@ public class runDse {
 	public void test(){
 		 BasicConfigurator.configure();
 	     Logger.getRootLogger().setLevel(Level.ERROR);
-	     Logger.getLogger("log").setLevel(Level.DEBUG);
+	     Logger.getLogger(CreateBeeWithDFS.class).setLevel(Level.ALL);
 	     //System.out.println("elkezdve");
 		 setUp su = new setUp();
 		
