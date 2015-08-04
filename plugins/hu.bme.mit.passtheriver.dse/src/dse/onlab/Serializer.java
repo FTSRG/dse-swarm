@@ -101,7 +101,7 @@ public class Serializer implements IStateCoder{
 	            }
 	            sb.append("  ");
 	        }
-		return sb;
+		return sb.toString();
 	}
 
 
@@ -113,7 +113,8 @@ public class Serializer implements IStateCoder{
 		if (match instanceof GetIntoMatch) {
 			GetIntoMatch m = (GetIntoMatch) match;
 			//System.out.println(m.getP().getName()+": "+m.getV().getActualLand().getName()+"->"+m.getV().getName());
-			return m.getP().getName()+": "+m.getV().getActualLand().getName()+"->"+m.getV().getName();
+			String s = m.getP().getName()+": "+m.getV().getActualLand().getName()+"->"+m.getV().getName();
+			return s.intern();
         } else if (match instanceof GetOutMatch) {
         	GetOutMatch m = (GetOutMatch) match;
         	//System.out.println(m.getP().getName()+": "+m.getV().getName()+"->"+m.getV().getActualLand().getName());

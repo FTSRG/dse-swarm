@@ -41,7 +41,7 @@ public class Patch {
 		TrajectoryFitness tf = new TrajectoryFitness(patch.getLastTransition(), context.calculateFitness()); 
 		this.bestBee.setTrajectoryFitness(tf);
 		this.bestBee.init(patch.clone(), BeeType.Explorer, context.calculateFitness());
-
+		this.bestBee.setInitialState(patch.clone());
 		this.patch = patch.clone();
 		
 	}

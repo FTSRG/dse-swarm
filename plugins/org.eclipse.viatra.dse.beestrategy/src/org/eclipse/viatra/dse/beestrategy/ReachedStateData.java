@@ -13,7 +13,7 @@ public class ReachedStateData {
 		return Bestti;
 	}
 	public void setBestti(TrajectoryInfo bestti) {
-		Bestti = bestti;
+		Bestti = bestti.clone();
 	}
 	public Double getBestfitness() {
 		return Bestfitness;

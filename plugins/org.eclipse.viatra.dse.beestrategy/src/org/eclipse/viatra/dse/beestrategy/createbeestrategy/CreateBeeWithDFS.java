@@ -77,28 +77,31 @@ public class CreateBeeWithDFS implements ICreateBee {
 		this.interrupted = true;
 
 	}
-	
-	public void newStateIsProcessed(boolean isAlreadyTraversed) {
+
+	public boolean newStateIsProcessed(boolean isAlreadyTraversed) {
 		Fitness actualFitness = context.calculateFitness();
 		IState currentState = dsm.getCurrentState();
-	
-        if (!isAlreadyTraversed) {  
-        	ReachedStateData rsd = new ReachedStateData();
-        	System.out.println(currentState.getId());
-        	rsd.setBestfitness(10.0);
-        	rsd.setBestti(dsm.getTrajectoryInfo());
-        	rsd.setReachedBy(context);
-        	bs.setNewStateValue(currentState, rsd);
-        }
-        if(isAlreadyTraversed){
-        	context.getDesignSpaceManager().undoLastTransformation();
-        }
-       
-//        if(bs.getifTravelsed(currentState)){
-//        	System.out.println("vissza");
-//        	context.getDesignSpaceManager().undoLastTransformation();
-//        }
-    }
+
+		// if (!isAlreadyTraversed) {
+		// logger.debug("reached state" + currentState.getId() + "isAlreadyTrav:
+		// " + isAlreadyTraversed);
+		// ReachedStateData rsd = new ReachedStateData();
+		// System.out.println(currentState.getId());
+		// rsd.setBestfitness(10.0);
+		// rsd.setBestti(dsm.getTrajectoryInfo());
+		// rsd.setReachedBy(context);
+		// bs.setNewStateValue(currentState, rsd);
+		// }
+		if (isAlreadyTraversed) {
+			context.getDesignSpaceManager().undoLastTransformation();
+		}
+
+		// if(bs.getifTravelsed(currentState)){
+		// System.out.println("vissza");
+		// context.getDesignSpaceManager().undoLastTransformation();
+		// }
+		return true;
+	}
 
 	// createRandomBee-be mehetne talan maskepp implementalva
 	// ExplorerThread explorerThread =
@@ -137,9 +140,17 @@ public class CreateBeeWithDFS implements ICreateBee {
 				nextTran = selectNextTransition();
 				ti.stepBack();
 			}
+			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0) return null;
 			// x1
+			// logger.debug("next transition: " + nextTran + " from: " +
+			// dsm.getCurrentState());
+
 			dsm.fireActivation(nextTran);
-			newStateIsProcessed(dsm.isNewModelStateAlreadyTraversed());
+
+			// boolean b =
+			// newStateIsProcessed(dsm.isNewModelStateAlreadyTraversed());
+			// logger.debug("visszalepes utan: " + dsm.getCurrentState());
+			// if (b)
 			patchSize--;
 			// x2
 		}
@@ -212,7 +223,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		this.patch.getBeeList().add(sb);
 		this.bs.increasenumberOfActiveBees();
 		this.sb = sb;
-		//System.out.println("hali");
+		// System.out.println("hali");
 		System.out.println(sb.getActualState().getCurrentState().getId());
 		this.interruptStrategy();
 		return sb;
@@ -280,7 +291,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	@Override
 	public void setMainStrategy(IStrategy beeStrategy) {
 		this.bs = (BeeStrategy) beeStrategy;
-		
+
 	}
 
 }

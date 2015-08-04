@@ -17,6 +17,7 @@ import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
+import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore.StopExecutionType;
@@ -39,20 +40,21 @@ public class BeeStrategy implements IStrategy {
 	private ISolutionStore solutionStore;
 	private IState startstate;
 	private boolean interrupted = false;
-	private ArrayList<Patch> bestpatches ;
+	private ArrayList<Patch> bestpatches;
 	private StopExecutionType set = StopExecutionType.CONTINUE;
 	private Integer sitesnum = 1;
 	private int eliteSitesNum = 1;
 	private Integer bestSitesNum = 3;
-	private Integer eliteBeesNum = 2;
+	private Integer eliteBeesNum = 1;
 	private Integer otherBeesNum = 1;
 
-	private Integer patchSize = 3;
+	private Integer patchSize = 8;
 	private volatile int numberOfActiveBees = 0;
-	private int numberOfMaxBees = 5;
+	private int numberOfMaxBees = 3;
 
 	protected ICreateBee randomBeeCreator;
 	protected ICreateBee neighbourBeeCreator;
+	private int iterations = 1;
 
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
@@ -72,9 +74,11 @@ public class BeeStrategy implements IStrategy {
 		}
 
 	}
+
 	/**
-	 * It will start as many workerThreads as many are defined in the setUp file (as MaximumPoolSize)
-	 * it also sets the concurrent collections, which are used for communication between the threads. 
+	 * It will start as many workerThreads as many are defined in the setUp file
+	 * (as MaximumPoolSize) it also sets the concurrent collections, which are
+	 * used for communication between the threads.
 	 */
 	protected void startWorkerThreads() {
 		ExplorerThread et = context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true,
@@ -92,7 +96,7 @@ public class BeeStrategy implements IStrategy {
 		startWorkerThreads();
 		this.bestpatches = new ArrayList<Patch>();
 		for (int i = 0; i < numberOfMaxBees; i++) {
-			if (!this.createRandomBee(patchSize)) {
+			if (!this.createRandomBee(patchSize * iterations)) {
 				System.out.println("exploreown2 :(");
 				return;
 			}
@@ -102,9 +106,11 @@ public class BeeStrategy implements IStrategy {
 		}
 		getBestPatches(sitesnum);
 		while (interrupted != true) {
-			//System.out.println(this.interrupted);
+			iterations++;
+			// System.out.println(this.interrupted);
 			// select best patches, a better patch has a better best bee, the
 			// other bees does not count
+
 			this.bestpatches = getBestPatches(sitesnum);
 
 			// create neighbourhoodbees from the best patches (elitepatches have
@@ -121,35 +127,39 @@ public class BeeStrategy implements IStrategy {
 			}
 			Integer remainingBeesNum = numberOfMaxBees - numberOfActiveBees;
 			for (int i = 0; i < remainingBeesNum; i++) {
-				createRandomBee(patchSize);
+				createRandomBee(patchSize*iterations);
 			}
-			while (numberOfActiveBees>=1){
+			while (numberOfActiveBees >= 1) {
 				getBackBees();
 			}
-		}
-		for (Patch patch : bestpatches) {
-			this.selectBestBeeInPatch(patch);
+			this.selectBestBeeInPatch();
+
 		}
 
 	}
-	
+
 	private void getBackBees() {
 		SearchData sd = getFromConcurrentList();
 		if (sd != null) {
-			numberOfActiveBees--;
+			this.decreasenumberOfActiveBees();
 			if (sd.getIsneighbour() == true) {
 				// it is a StupidBee
 				StupidBee sb = sd.getStupidBee();
 				isSolution(sb);
-				if(this.interrupted==true) return;
+				if (this.interrupted == true)
+					return;
 				for (Patch patch : patches) {
-					patch.getPatch().equals(sb.getInitialState());
+					if (patch.getPatch().equals(sb.getInitialState())) {
+						patch.getBeeList().add(sb);
+						break;
+					}
 				}
 
 			} else {
 				Patch p = sd.getPatch();
 				this.patches.add(p);
-				if (isSolution(p));
+				if (isSolution(p))
+					;
 				if (interrupted == true)
 					return;
 			}
@@ -198,15 +208,15 @@ public class BeeStrategy implements IStrategy {
 			for (int i = 0; i < bestSitesNum; i++) {
 
 			}
-//			this.selectBestBeeInPatch(bestpatches.get(i));
-//			Integer remainingBeesNum = numberOfMaxBees - numberOfActiveBees;
-//			for (int i = 0; i < remainingBeesNum; i++) {
-				// Patch randomBee = createRandomBee(patchSize);
-				// if (isSolution(randomBee) == true) {
-				// return;
-				// }
-				// this.patches.add(randomBee);
-//			}
+			// this.selectBestBeeInPatch(bestpatches.get(i));
+			// Integer remainingBeesNum = numberOfMaxBees - numberOfActiveBees;
+			// for (int i = 0; i < remainingBeesNum; i++) {
+			// Patch randomBee = createRandomBee(patchSize);
+			// if (isSolution(randomBee) == true) {
+			// return;
+			// }
+			// this.patches.add(randomBee);
+			// }
 		}
 
 	}
@@ -230,12 +240,14 @@ public class BeeStrategy implements IStrategy {
 		}
 		return false;
 	}
+
 	/**
 	 * It will increase the numberOfActiveBees by one
 	 */
 	public synchronized void decreasenumberOfActiveBees() {
 		this.numberOfActiveBees--;
 	}
+
 	/**
 	 * It will decrease the numberOfActiveBees by one
 	 */
@@ -309,36 +321,53 @@ public class BeeStrategy implements IStrategy {
 			if (bestpatches.size() >= bestSitesNum)
 				break;
 		}
-
+		patches = bestpatches;
 		return bestpatches;
 	}
 
-	private void selectBestBeeInPatch(Patch patch) {
-		for (int i = 0; i < patch.getBeeList().size(); i++) {
-			double dBest = 0.0;
-			double dNext = 0.0;
-			Fitness f = patch.getBestBee().getTrajectoryFitness().fitness;
-			for (Entry<String, Double> fit : f.entrySet()) {
-				if (fit.getKey().equals("MyTrajectoryCost")) {
-					dBest = fit.getValue();
+	private void selectBestBeeInPatch() {
+		// for (int i = 0; i < patch.getBeeList().size(); i++) {
+		// double dBest = 0.0;
+		// double dNext = 0.0;
+		// Fitness f = patch.getBestBee().getTrajectoryFitness().fitness;
+		// for (Entry<String, Double> fit : f.entrySet()) {
+		// if (fit.getKey().equals("MyTrajectoryCost")) {
+		// dBest = fit.getValue();
+		// }
+		// }
+		// f = patch.getBeeList().get(i).getTrajectoryFitness().fitness;
+		// for (Entry<String, Double> fit : f.entrySet()) {
+		// if (fit.getKey().equals("MyTrajectoryCost")) {
+		// dNext = fit.getValue();
+		//
+		// }
+		// }
+		// if (dBest < dNext) {
+		// patch.bestBee = patch.getBeeList().get(i);
+		//
+		// }
+		// }
+		ObjectiveComparatorHelper och = context.getObjectiveComparatorHelper();
+		for (Patch patch : patches) {
+			och.clearTrajectoryFitnesses();
+			if (patch.getBeeList().size() != 0) {
 
+				for (StupidBee beechan : patch.getBeeList()) {
+					och.addTrajectoryFitness(beechan.getTrajectoryFitness());
+				}
+				TrajectoryFitness tf = och.getRandomBest();
+				for (StupidBee beechan : patch.getBeeList()) {
+					if (beechan.getTrajectoryFitness().equals(tf)) {
+						patch.bestBee = beechan;
+						patch.setBeeList(new ArrayList<StupidBee>());
+						patch.patch = beechan.getActualState();
+						// this.numberOfActiveBees -= patch.getBeeList().size();
+						break;
+					}
 				}
 			}
-			f = patch.getBeeList().get(i).getTrajectoryFitness().fitness;
-			for (Entry<String, Double> fit : f.entrySet()) {
-				if (fit.getKey().equals("MyTrajectoryCost")) {
-					dNext = fit.getValue();
 
-				}
-			}
-			if (dBest < dNext) {
-				patch.bestBee = patch.getBeeList().get(i);
-
-			}
 		}
-		patch.patch = patch.bestBee.actualState;
-		this.numberOfActiveBees -= patch.getBeeList().size();
-		patch.setBeeList(new ArrayList<StupidBee>());
 
 	}
 
@@ -415,6 +444,7 @@ public class BeeStrategy implements IStrategy {
 		boolean success = this.searchablePatches.add(sd);
 		if (success == true) {
 			this.numberOfActiveBees++;
+			// notifyAll();
 		}
 		return success;
 	}
@@ -563,18 +593,18 @@ public class BeeStrategy implements IStrategy {
 	public void setNeighbourBeeCreator(ICreateBee neighbourBeeCreator) {
 		this.neighbourBeeCreator = neighbourBeeCreator;
 	}
-	
-	public synchronized Double getStateFitness(IState stateCode){
+
+	public synchronized Double getStateFitness(IState stateCode) {
 		return this.reachedStates.get(stateCode).getBestfitness();
 	}
-	
-	public synchronized Boolean getifTravelsed(IState stateCode){
-		return this.reachedStates.get(stateCode)!=null;
+
+	public synchronized Boolean getifTravelsed(IState stateCode) {
+		return this.reachedStates.get(stateCode) != null;
 	}
-	
-	public synchronized boolean setNewStateValue(IState stateCode, ReachedStateData rsd){
+
+	public synchronized boolean setNewStateValue(IState stateCode, ReachedStateData rsd) {
 		ReachedStateData data = this.reachedStates.get(stateCode);
-		if(data!=null && data.getBestfitness()>rsd.getBestfitness()){
+		if (data != null && data.getBestfitness() > rsd.getBestfitness()) {
 			return false;
 		}
 		this.reachedStates.put(stateCode, rsd);

@@ -136,17 +136,15 @@ public class setUp {
 				
 			}
 		});*/
-		 dse.setMaxNumberOfThreads(5);
+		 dse.setMaxNumberOfThreads(2);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 System.out.println("hali");
 		// bs = new BeeStrategy2();
 		 bs = new BeeStrategy(3);
-		/* bs.setEliteBeesNum(1);
-		 bs.setEliteSitesNum(1);
-		
-		 bs.setSitesnum(2);
+		 bs.setEliteBeesNum(1);
+		 bs.setEliteSitesNum(1);		
+		 bs.setSitesnum(1);
 		 bs.setPatchSize(2);
-		 bs.setNumberOfMaxBees(10);*/
 		 CreateBeeWithDFS df = new CreateBeeWithDFS();
 		 bs.setNeighbourBeeCreator(df);
 		 bs.setRandomBeeCreator(df);
