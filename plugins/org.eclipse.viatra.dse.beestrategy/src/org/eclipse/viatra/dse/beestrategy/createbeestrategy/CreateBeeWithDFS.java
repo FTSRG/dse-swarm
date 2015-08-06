@@ -1,6 +1,8 @@
 package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +36,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 	private String id;
 	private boolean interrupted;
 	private Logger logger = Logger.getLogger(getClass());
+	private HashSet<IState> alreadyFoundStates;
 
 	public boolean isInterrupted() {
 		return interrupted;
@@ -76,6 +79,16 @@ public class CreateBeeWithDFS implements ICreateBee {
 	public synchronized void interruptStrategy() {
 		this.interrupted = true;
 
+	}
+	
+	public boolean isAlreadyFoundInThisStrategy(IState iState){
+		if(this.alreadyFoundStates==null){
+			alreadyFoundStates = new HashSet<IState>();
+			alreadyFoundStates.add(iState);
+			return false;
+		}
+		 return alreadyFoundStates.add(iState);
+		
 	}
 
 	public boolean newStateIsProcessed(boolean isAlreadyTraversed) {
@@ -146,7 +159,8 @@ public class CreateBeeWithDFS implements ICreateBee {
 			// dsm.getCurrentState());
 
 			dsm.fireActivation(nextTran);
-
+			if (this.isAlreadyFoundInThisStrategy(dsm.getCurrentState()))
+				dsm.undoLastTransformation();
 			// boolean b =
 			// newStateIsProcessed(dsm.isNewModelStateAlreadyTraversed());
 			// logger.debug("visszalepes utan: " + dsm.getCurrentState());

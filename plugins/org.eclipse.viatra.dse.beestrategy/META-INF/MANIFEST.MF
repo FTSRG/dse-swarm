@@ -7,3 +7,4 @@ Export-Package: org.eclipse.viatra.dse.beestrategy,
  org.eclipse.viatra.dse.beestrategy.createbeestrategy
 Require-Bundle: org.eclipse.viatra.dse.base,
  org.eclipse.xtend.lib;bundle-version="2.8.3"
+Import-Package: org.apache.log4j;version="1.2.15"

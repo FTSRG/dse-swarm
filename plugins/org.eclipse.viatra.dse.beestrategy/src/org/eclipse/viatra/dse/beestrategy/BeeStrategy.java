@@ -1,6 +1,7 @@
 package org.eclipse.viatra.dse.beestrategy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -15,7 +16,9 @@ import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
 import org.eclipse.viatra.dse.designspace.api.IState;
+import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
+import org.eclipse.viatra.dse.designspace.impl.pojo.Transition;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
@@ -47,6 +50,7 @@ public class BeeStrategy implements IStrategy {
 	private Integer bestSitesNum = 3;
 	private Integer eliteBeesNum = 1;
 	private Integer otherBeesNum = 1;
+	private HashSet<ExplorerThread> workerThreads = new HashSet<ExplorerThread>();
 
 	private Integer patchSize = 8;
 	private volatile int numberOfActiveBees = 0;
@@ -81,14 +85,29 @@ public class BeeStrategy implements IStrategy {
 	 * used for communication between the threads.
 	 */
 	protected void startWorkerThreads() {
-		ExplorerThread et = context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true,
-				new BeeStrategyWorkerThread());
-		while (et != null) {
+		Boolean trystart = true;
+		// ExplorerThread et =
+		// context.getGlobalContext().tryStartNewThread(context,
+		// context.getModelRoot(), true,
+		// new BeeStrategyWorkerThread());
+		// while (et != null) {
+		// BeeStrategyWorkerThread bwt = (BeeStrategyWorkerThread)
+		// et.getThreadContext().getStrategy();
+		// bwt.setConcurrentCollections(this.searchablePatches,
+		// this.instancesToBeChecked);
+		// et = context.getGlobalContext().tryStartNewThread(context,
+		// context.getModelRoot(), true,
+		// new BeeStrategyWorkerThread());
+		// }
+
+		while (trystart == true) {
+			ExplorerThread et = context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true,
+					new BeeStrategyWorkerThread());
+			if (et == null)
+				break;
 			BeeStrategyWorkerThread bwt = (BeeStrategyWorkerThread) et.getThreadContext().getStrategy();
 			bwt.setConcurrentCollections(this.searchablePatches, this.instancesToBeChecked);
-			et = context.getGlobalContext().tryStartNewThread(context, context.getModelRoot(), true,
-					new BeeStrategyWorkerThread());
-
+			this.workerThreads.add(et);
 		}
 	}
 
@@ -127,9 +146,11 @@ public class BeeStrategy implements IStrategy {
 			}
 			Integer remainingBeesNum = numberOfMaxBees - numberOfActiveBees;
 			for (int i = 0; i < remainingBeesNum; i++) {
-				createRandomBee(patchSize*iterations);
+				createRandomBee(patchSize * iterations);
 			}
 			while (numberOfActiveBees >= 1) {
+				if (this.interrupted == true)
+					return;
 				getBackBees();
 			}
 			this.selectBestBeeInPatch();
@@ -158,8 +179,7 @@ public class BeeStrategy implements IStrategy {
 			} else {
 				Patch p = sd.getPatch();
 				this.patches.add(p);
-				if (isSolution(p))
-					;
+				if (isSolution(p));
 				if (interrupted == true)
 					return;
 			}
@@ -231,6 +251,13 @@ public class BeeStrategy implements IStrategy {
 	 */
 	public boolean isSolution(StupidBee bee) {
 		if (bee != null && bee.getFitness().isSatisifiesHardObjectives()) {
+			while (dsm.getTrajectoryFromRoot().size() != 0) {
+				dsm.undoLastTransformation();
+			}
+			TrajectoryInfo ti = bee.getActualState();
+			for (ITransition tran : ti.getFullTransitionTrajectory()) {
+				dsm.fireActivation(tran);
+			}
 			set = solutionStore.newSolution(context);
 			if (set != StopExecutionType.CONTINUE) {
 				this.handleset(context);
@@ -452,6 +479,10 @@ public class BeeStrategy implements IStrategy {
 	@Override
 	public synchronized void interruptStrategy() {
 		this.interrupted = true;
+		System.out.println("most");
+		for (ExplorerThread thread : workerThreads) {
+			thread.stopRunning();
+		}
 
 	}
 
