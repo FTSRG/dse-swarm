@@ -1,7 +1,6 @@
 package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -11,9 +10,8 @@ import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy;
+import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
 import org.eclipse.viatra.dse.beestrategy.Patch;
-import org.eclipse.viatra.dse.beestrategy.ReachedStateData;
 import org.eclipse.viatra.dse.beestrategy.StupidBee;
 import org.eclipse.viatra.dse.beestrategy.StupidBee.BeeType;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
@@ -28,10 +26,10 @@ public class CreateBeeWithDFS implements ICreateBee {
 	private Integer patchSize;
 	private ThreadContext context;
 	private boolean neighbour;
-	private BeeStrategy bs;
+	private BeeStrategy3 bs;
 	private StupidBee sb;
 	private DesignSpaceManager dsm;
-	FilterOptions fo = new FilterOptions().nothingIfCut().nothingIfGoal().untraversedOnly();
+	FilterOptions fo = new FilterOptions().nothingIfCut().untraversedOnly();
 	private Patch patch;
 	private String id;
 	private boolean interrupted;
@@ -69,10 +67,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 		else
 			createNeighbourBee();
-		System.out.println("halivege");
-
-		interruptStrategy();
-		// this.notifyAll();
+		//interruptStrategy();
 	}
 
 	@Override
@@ -145,13 +140,11 @@ public class CreateBeeWithDFS implements ICreateBee {
 		while (dsm.getTrajectoryFromRoot().size() != 0) {
 			dsm.undoLastTransformation();
 		}
-		TrajectoryInfo ti = dsm.getTrajectoryInfo().clone();
 		while (patchSize > 0) {
 			ITransition nextTran = selectNextTransition();
-			while (nextTran == null && dsm.getTrajectoryFromRoot().size() >= 0) {
+ 			while (nextTran == null && dsm.getTrajectoryFromRoot().size() > 0) {
 				dsm.undoLastTransformation();
 				nextTran = selectNextTransition();
-				ti.stepBack();
 			}
 			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0) return null;
 			// x1
@@ -169,12 +162,8 @@ public class CreateBeeWithDFS implements ICreateBee {
 			// x2
 		}
 		Patch p = new Patch();
-		if (ti.getTransitionTrajectory().size() != 0)
-			p.setPatch(ti, context);
 		p.setBestfitness(context.calculateFitness());
-		// x3
-		p.setBestfitness(context.calculateFitness());
-		p.setPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
+		p.initPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
 		this.patch = p;
 		return p;
 	}
@@ -238,7 +227,8 @@ public class CreateBeeWithDFS implements ICreateBee {
 		this.bs.increasenumberOfActiveBees();
 		this.sb = sb;
 		// System.out.println("hali");
-		System.out.println(sb.getActualState().getCurrentState().getId());
+		//TODO
+		//System.out.println(sb.getActualState().getCurrentState().getId());
 		this.interruptStrategy();
 		return sb;
 
@@ -285,7 +275,7 @@ public class CreateBeeWithDFS implements ICreateBee {
 		return this.id;
 	}
 
-	public void setBs(BeeStrategy beeStrategy) {
+	public void setBs(BeeStrategy3 beeStrategy) {
 		this.bs = beeStrategy;
 
 	}
@@ -304,8 +294,14 @@ public class CreateBeeWithDFS implements ICreateBee {
 
 	@Override
 	public void setMainStrategy(IStrategy beeStrategy) {
-		this.bs = (BeeStrategy) beeStrategy;
+		this.bs = (BeeStrategy3) beeStrategy;
 
+	}
+
+	@Override
+	public void setStatesInTrajectory(HashSet<IState> states) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

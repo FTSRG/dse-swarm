@@ -179,12 +179,12 @@ public class BeeStrategy2 implements IStrategy {
 		}
 		Patch p = new Patch();
 		if (ti.getTransitionTrajectory().size() != 0)
-			p.setPatch(ti, context);
+			p.initPatch(ti, context);
 		p.setBestfitness(context.calculateFitness());
 		this.patches.add(p);
 		this.numberOfActiveBees++;
 		p.setBestfitness(context.calculateFitness());
-		p.setPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
+		p.initPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
 		return p;
 	}
 

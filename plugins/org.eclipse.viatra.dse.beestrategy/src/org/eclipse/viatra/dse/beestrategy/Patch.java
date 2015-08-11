@@ -36,14 +36,17 @@ public class Patch {
 		return patch;
 	}
 	
-	public void setPatch(TrajectoryInfo patch, ThreadContext context) {
+	public void initPatch(TrajectoryInfo patch, ThreadContext context) {
 		this.bestBee= new StupidBee();
-		TrajectoryFitness tf = new TrajectoryFitness(patch.getLastTransition(), context.calculateFitness()); 
-		this.bestBee.setTrajectoryFitness(tf);
-		this.bestBee.init(patch.clone(), BeeType.Explorer, context.calculateFitness());
-		this.bestBee.setInitialState(patch.clone());
-		this.patch = patch.clone();
-		
+		if (patch == null) this.bestBee.setTrajectoryFitness(null);
+		else{
+			TrajectoryFitness tf = new TrajectoryFitness(patch.getLastTransition(), context.calculateFitness()); 
+			this.bestBee.setTrajectoryFitness(tf);
+			TrajectoryInfo clone = patch.clone();
+			this.bestBee.init(clone, BeeType.Explorer, context.calculateFitness());
+			this.bestBee.setInitialState(clone);
+			this.patch = clone;
+		}
 	}
 	
 	

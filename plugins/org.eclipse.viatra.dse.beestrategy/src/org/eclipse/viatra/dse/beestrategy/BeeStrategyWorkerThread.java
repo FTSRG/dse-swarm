@@ -32,15 +32,19 @@ public class BeeStrategyWorkerThread implements IStrategy {
 		try{
 		while (!interrupted) {
 			while (searchablePatches == null) {
+				throw new Exception("not all Collections are initialized in Beestrategy");
 			}
 			if (searchablePatches.size() == 0) {
-				//wait();
+				waitfunction();
 			} else {
+				//collect a searchData from searchablePatches
 				entry = getNewSearch();
 				while(entry==null){
 					entry = getNewSearch();
 				}
+				//get the strategy, which will be runned
 				IStrategy is = entry.getStrategy();
+				//get the place of the patch, and go there (set context to the right place)
 				is.initStrategy(context);
 				while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
 					context.getDesignSpaceManager().undoLastTransformation();
@@ -50,27 +54,33 @@ public class BeeStrategyWorkerThread implements IStrategy {
 					context.getDesignSpaceManager().fireActivation(transition);
 				}
 				logger.debug("search from: "+context.getDesignSpaceManager().getTrajectoryInfo());
-
-				if (entry.getIsneighbour() == true) {
+				//if it is a neighbourhoodbee, than run a neighbourhoodBee from the patch
+				if (entry.getHasParent() == true) {
 					StupidBee sb = entry.getStrategy().createNeighbourBee();
 					sb.setInitialState(entry.getPatch().getPatch());
 					entry.setStupidBee(sb);
 					setNewSearchData(entry);
 					logger.debug("arrived to: "+context.getDesignSpaceManager().getTrajectoryInfo());
-				} else {
+				}
+				//if it is a patch, than create a patch, with randomBee 
+				else {
 					entry.getStrategy().setStopCond(entry.getPatchsize());
 					Patch p = entry.getStrategy().createRandomBee();
+					//if it is null, than we have to stop, sooner or later check it on the other side (when we take it out of the list), if it is false, than don't put it into the list
 					if (p == null){
 						p = new Patch();
-						p.setPatch(null, context);
+						p.initPatch(null, context);
 					}
-					while (p.getBestBee().getInitialState().getCurrentState().toString().equals(entry.getPatch().getPatch().getCurrentState().toString())){
-						entry.getStrategy().setStopCond(entry.getPatchsize());
-						p = entry.getStrategy().createRandomBee();
-						if (p == null){
-							p = new Patch();
-							p.setPatch(null, context);
-							break;
+					else{
+					//if it is the current start pos, than we could not find a proper solution
+						while (p.getBestBee().getInitialState().getCurrentState().toString().equals(entry.getPatch().getPatch().getCurrentState().toString())){
+							entry.getStrategy().setStopCond(entry.getPatchsize());
+							p = entry.getStrategy().createRandomBee();
+							if (p == null){
+								p = new Patch();
+								p.initPatch(null, context);
+								break;
+							}
 						}
 					}
 					entry.setPatch(p);
@@ -85,6 +95,12 @@ public class BeeStrategyWorkerThread implements IStrategy {
 			e.printStackTrace();
 		}
 
+	}
+
+	private synchronized void waitfunction() throws InterruptedException {
+		this.notifyAll();
+		//this.wait(5000);
+		
 	}
 
 	private synchronized SearchData getNewSearch() {
@@ -104,12 +120,14 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				return false;
 			}
 		}
+		//this.notifyAll();
 		return true;
 	}
 
 	@Override
 	public void interruptStrategy() {
 		this.interrupted = true;
+		System.out.println("stopped");
 
 	}
 

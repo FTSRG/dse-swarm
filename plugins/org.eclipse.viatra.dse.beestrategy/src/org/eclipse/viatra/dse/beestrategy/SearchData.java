@@ -3,10 +3,11 @@ package org.eclipse.viatra.dse.beestrategy;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
 
 public class SearchData {
+	
 	private Patch patch;
 	private ICreateBee strategy;
-	private Integer patchsize;
-	private Boolean isneighbour;
+	private Integer patchSize;
+	private Boolean isNeighbour;
 	private StupidBee sb;
 
 	public StupidBee getStupidBee() {
@@ -34,18 +35,18 @@ public class SearchData {
 	}
 
 	public Integer getPatchsize() {
-		return patchsize;
+		return patchSize;
 	}
 
 	public void setPatchsize(Integer patchsize) {
-		this.patchsize = patchsize;
+		this.patchSize = patchsize;
 	}
 
-	public Boolean getIsneighbour() {
-		return isneighbour;
+	public Boolean getHasParent() {
+		return isNeighbour;
 	}
 
 	public void setIsneighbour(Boolean isneighbour) {
-		this.isneighbour = isneighbour;
+		this.isNeighbour = isneighbour;
 	}
 }
