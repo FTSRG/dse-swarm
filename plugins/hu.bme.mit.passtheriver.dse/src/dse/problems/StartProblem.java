@@ -3,7 +3,7 @@ package dse.problems;
 
 public class StartProblem {
 	PassTheRiverclass pt;
-/*	 public StartProblem (){
+	 public StartProblem (){
 		 	pt= new PassTheRiverclass();
 		 	onlab.Land startPoint =pt.createLand();
 			startPoint.setName("start");
@@ -67,7 +67,7 @@ public class StartProblem {
 			
 			
 	 }
-	 */
+	 /*
 	 public StartProblem(){
 		pt= new PassTheRiverclass();
 	 	onlab.Land startPoint =pt.createLand();
@@ -104,7 +104,7 @@ public class StartProblem {
 		
 		startPoint.getPassangers().add(man);
 		startPoint.getPassangers().add(cabbage);
-	 }
+	 }*/
 	 
 	 public PassTheRiverclass getpt(){
 		 return this.pt;

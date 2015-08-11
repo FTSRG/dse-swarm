@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="constraints.Guidance" point="org.eclipse.incquery.runtime.queryspecification">
+    <group group="org.eclipse.incquery.runtime.extensibility.SingletonExtensionFactory:constraints.Guidance" id="constraints.Guidance"/>
+  </extension>
   <extension id="constraints.Constraints" point="org.eclipse.incquery.runtime.queryspecification">
     <group group="org.eclipse.incquery.runtime.extensibility.SingletonExtensionFactory:constraints.Constraints" id="constraints.Constraints"/>
   </extension>

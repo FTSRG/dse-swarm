@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mit.bme.hu.serverpark:UsedMachines
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark"
+    xsi:schemaLocation="mit.bme.hu.serverpark dseHelperModel.ecore">
+  <processes/>
+</mit.bme.hu.serverpark:UsedMachines>

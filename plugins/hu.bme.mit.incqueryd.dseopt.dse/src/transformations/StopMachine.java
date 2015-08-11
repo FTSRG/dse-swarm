@@ -1,18 +1,18 @@
 package transformations;
 
-import hu.bme.mit.incqueryd.dseopt.queries.StopServerMatch;
-import hu.bme.mit.incqueryd.dseopt.queries.util.StopServerProcessor;
-import hu.bme.mit.incqueryd.dseopt.queries.util.StopServerQuerySpecification;
-
 import org.eclipse.incquery.runtime.exception.IncQueryException;
-import org.eclipse.viatra.dse.api.TransformationRule;
+import org.eclipse.viatra.dse.api.DSETransformationRule;
 
 import ServerPark.Machines;
 import ServerPark.UsedMachines;
+import hu.bme.mit.incqueryd.dseopt.queries.StopServerMatch;
+import hu.bme.mit.incqueryd.dseopt.queries.StopServerMatcher;
+import hu.bme.mit.incqueryd.dseopt.queries.util.StopServerProcessor;
+import hu.bme.mit.incqueryd.dseopt.queries.util.StopServerQuerySpecification;
 
 public class StopMachine {
 	
-	public TransformationRule<StopServerMatch> begin() throws IncQueryException{
+	public DSETransformationRule<StopServerMatch, StopServerMatcher> begin() throws IncQueryException{
 		StopServerProcessor ssp = new StopServerProcessor() {
 
 			@Override
@@ -34,7 +34,7 @@ public class StopMachine {
 			}
 		};
 		
-		TransformationRule<StopServerMatch> tr = new TransformationRule<StopServerMatch>(StopServerQuerySpecification.instance(), ssp);
+		DSETransformationRule<StopServerMatch, StopServerMatcher> tr = new DSETransformationRule<StopServerMatch, StopServerMatcher>(StopServerQuerySpecification.instance(), ssp);
 		
 		return tr;
 		

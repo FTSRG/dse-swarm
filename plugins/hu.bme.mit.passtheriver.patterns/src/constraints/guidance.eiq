@@ -1,0 +1,17 @@
+package constraints
+
+import "hu.bme.mdsd.onlab" 
+import "http://www.eclipse.org/emf/2002/Ecore"
+
+pattern numberOfPassangersOnLand(num: EInt){
+	num == count find passangersOnLand(P, L);
+}
+
+pattern PassangerOnLand(P:Passanger, L: Land){
+	Passanger.target(P,L);	
+}
+
+pattern PassangerOnVechichleToTarget(P:Passanger, L:Land){
+	Passanger.travelOn(P, N);
+	Land.vehichles(L, N);
+}

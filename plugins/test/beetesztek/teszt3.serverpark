@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mit.bme.hu.serverpark:UsedMachines
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark"
+    running="//@allMachines.0 //@allMachines.1">
+  <processes
+      id="p3"
+      size="3"
+      endStateIp="//@allMachines.1"/>
+  <processes
+      id="p2"
+      size="10"
+      endStateIp="//@allMachines.1"/>
+  <processes
+      id="p1"
+      size="10"
+      endStateIp="//@allMachines.1"/>
+  <allMachines
+      IP="m2"
+      MemorySize="200"
+      CPUNum="1"
+      serialNumber="1"/>
+  <allMachines
+      IP="m1"
+      UsedMemory="30"
+      MemorySize="300"
+      machineProcesses="//@processes.2 //@processes.1 //@processes.0"/>
+</mit.bme.hu.serverpark:UsedMachines>

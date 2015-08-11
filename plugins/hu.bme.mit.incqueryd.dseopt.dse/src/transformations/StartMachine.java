@@ -1,18 +1,18 @@
 package transformations;
 
-import hu.bme.mit.incqueryd.dseopt.queries.StartServerMatch;
-import hu.bme.mit.incqueryd.dseopt.queries.util.StartServerProcessor;
-import hu.bme.mit.incqueryd.dseopt.queries.util.StartServerQuerySpecification;
-
 import org.eclipse.incquery.runtime.exception.IncQueryException;
-import org.eclipse.viatra.dse.api.TransformationRule;
+import org.eclipse.viatra.dse.api.DSETransformationRule;
 
 import ServerPark.Machines;
 import ServerPark.UsedMachines;
+import hu.bme.mit.incqueryd.dseopt.queries.StartServerMatch;
+import hu.bme.mit.incqueryd.dseopt.queries.StartServerMatcher;
+import hu.bme.mit.incqueryd.dseopt.queries.util.StartServerProcessor;
+import hu.bme.mit.incqueryd.dseopt.queries.util.StartServerQuerySpecification;
 
 public class StartMachine {
 	
-	public TransformationRule<StartServerMatch> begin() throws IncQueryException{
+	public DSETransformationRule<StartServerMatch, StartServerMatcher> begin() throws IncQueryException{
 		StartServerProcessor ssp = new StartServerProcessor() {
 
 			@Override
@@ -27,7 +27,7 @@ public class StartMachine {
 //				System.out.println();
 			}
 		};
-		TransformationRule<StartServerMatch> tr = new TransformationRule<StartServerMatch>(StartServerQuerySpecification.instance(), ssp);
+		DSETransformationRule<StartServerMatch, StartServerMatcher>  tr = new DSETransformationRule<StartServerMatch, StartServerMatcher> (StartServerQuerySpecification.instance(), ssp);
 		return tr;
 		
 	}

@@ -1,18 +1,17 @@
 package transformations;
 
-import hu.bme.mit.incqueryd.dseopt.queries.ChangeProcessLocationMatch;
-import hu.bme.mit.incqueryd.dseopt.queries.util.ChangeProcessLocationProcessor;
-import hu.bme.mit.incqueryd.dseopt.queries.util.ChangeProcessLocationQuerySpecification;
-import infrastructure.Process;
-
 import org.eclipse.incquery.runtime.exception.IncQueryException;
-import org.eclipse.viatra.dse.api.TransformationRule;
+import org.eclipse.viatra.dse.api.DSETransformationRule;
 
 import ServerPark.Machines;
 import ServerPark.UsedMachines;
+import hu.bme.mit.incqueryd.dseopt.queries.ChangeProcessLocationMatch;
+import hu.bme.mit.incqueryd.dseopt.queries.ChangeProcessLocationMatcher;
+import hu.bme.mit.incqueryd.dseopt.queries.util.ChangeProcessLocationProcessor;
+import hu.bme.mit.incqueryd.dseopt.queries.util.ChangeProcessLocationQuerySpecification;
 
 public class ChangeProcessLocation {
-	public TransformationRule<ChangeProcessLocationMatch> begin() throws IncQueryException{
+	public DSETransformationRule<ChangeProcessLocationMatch, ChangeProcessLocationMatcher> begin() throws IncQueryException{
 		ChangeProcessLocationProcessor ssp = new ChangeProcessLocationProcessor() {
 
 			@Override
@@ -40,8 +39,10 @@ public class ChangeProcessLocation {
 
 			
 		};
-		TransformationRule<ChangeProcessLocationMatch> tr = new TransformationRule<ChangeProcessLocationMatch>(ChangeProcessLocationQuerySpecification.instance(), ssp);
+		DSETransformationRule<ChangeProcessLocationMatch, ChangeProcessLocationMatcher> tr = new DSETransformationRule<ChangeProcessLocationMatch, ChangeProcessLocationMatcher>(ChangeProcessLocationQuerySpecification.instance(), ssp);
 		return tr;
 		
 	}
+	
+
 }

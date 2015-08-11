@@ -19,4 +19,5 @@ public interface ICreateBee extends IStrategy{
 	public void setIfNeighbour(Boolean neighbour);
 	public void setMainStrategy(IStrategy beeStrategy);
 	public void setStatesInTrajectory(HashSet<IState> states);
+	
 }

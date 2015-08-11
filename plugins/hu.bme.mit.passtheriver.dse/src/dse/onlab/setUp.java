@@ -2,24 +2,23 @@ package dse.onlab;
 
 import java.util.Collection;
 
-import org.eclipse.incquery.runtime.api.IPatternMatch;
 import org.eclipse.incquery.runtime.exception.IncQueryException;
 import org.eclipse.viatra.dse.api.DSETransformationRule;
 import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
 import org.eclipse.viatra.dse.api.Solution;
 import org.eclipse.viatra.dse.api.Strategies;
 import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy2;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
-import org.eclipse.viatra.dse.objectives.ActivationFitnessProcessor;
+import org.eclipse.viatra.dse.objectives.IObjective;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
 import org.eclipse.viatra.dse.objectives.impl.TrajectoryCostSoftObjective;
+import org.eclipse.viatra.dse.objectives.impl.WeightedQueriesSoftObjective;
 import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
 
 import constraints.util.DangerousPassangersAtOnePlaceQuerySpecification;
 import constraints.util.NullPassangerAtWrongPlaceQuerySpecification;
+import constraints.util.PassangerOnLandQuerySpecification;
+import constraints.util.PassangerOnVechichleToTargetQuerySpecification;
 import dse.problems.StartProblem;
 import dse.transformation.GetIntoBoat;
 import dse.transformation.GetOutOfBoat;
@@ -33,7 +32,7 @@ public class setUp {
 	 protected DSETransformationRule<?, ?> getOutOfVehichle;
 	 protected DSETransformationRule<?, ?> switchLands;
 	 FixedPriorityStrategy fps;
-	 BeeStrategy bs;
+	// BeeStrategy bs;
 	 
 	public void setUpProject() throws IncQueryException{
 		
@@ -52,30 +51,30 @@ public class setUp {
 		 dse.addObjective(new ModelQueriesHardObjective("MyHardObjective")
 		    .withConstraint(NullPassangerAtWrongPlaceQuerySpecification.instance()));
 		dse.addObjective(new TrajectoryCostSoftObjective("MyTrajectoryCost")
-				.withActivationCost(getInTheVehichle, new ActivationFitnessProcessor() {
-					
-					@Override
-					public double process(IPatternMatch match) {
-						// TODO Auto-generated method stub
-						return 0;
-					}
-				})
-				.withActivationCost(getOutOfVehichle, new ActivationFitnessProcessor() {
-					
-					@Override
-					public double process(IPatternMatch match) {
-						// TODO Auto-generated method stub
-						return 0;
-					}
-				})
-				.withActivationCost(switchLands, new ActivationFitnessProcessor() {
-					
-					@Override
-					public double process(IPatternMatch match) {
-						// TODO Auto-generated method stub
-						return 0;
-					}
-				})
+//				.withActivationCost(getInTheVehichle, new ActivationFitnessProcessor() {
+//					
+//					@Override
+//					public double process(IPatternMatch match) {
+//						// TODO Auto-generated method stub
+//						return 0;
+//					}
+//				})
+//				.withActivationCost(getOutOfVehichle, new ActivationFitnessProcessor() {
+//					
+//					@Override
+//					public double process(IPatternMatch match) {
+//						// TODO Auto-generated method stub
+//						return 0;
+//					}
+//				})
+//				.withActivationCost(switchLands, new ActivationFitnessProcessor() {
+//					
+//					@Override
+//					public double process(IPatternMatch match) {
+//						// TODO Auto-generated method stub
+//						return 0;
+//					}
+//				})
 				.withTrajectoryLengthWeight(5)
 				.withRuleCost(getInTheVehichle, 5)
 				.withRuleCost(getOutOfVehichle, 5)
@@ -90,7 +89,11 @@ public class setUp {
 		 dse.addGlobalConstraint(new ModelQueriesGlobalConstraint()
 		  .withConstraint(DangerousPassangersAtOnePlaceQuerySpecification.instance()));
 		 System.out.println("hali5");
-		 /*	 dse.addGlobalConstraint(new IGlobalConstraint() {
+		 IObjective standingAtTarget = new WeightedQueriesSoftObjective()
+				 .withConstraint(PassangerOnLandQuerySpecification.instance(), 2)
+				 .withConstraint(PassangerOnVechichleToTargetQuerySpecification.instance(), 1);
+		 dse.addObjective(standingAtTarget);
+		 	 /*	 dse.addGlobalConstraint(new IGlobalConstraint() {
 			
 			@Override
 			public void init(ThreadContext context) {
@@ -140,14 +143,15 @@ public class setUp {
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 System.out.println("hali");
 		// bs = new BeeStrategy2();
-		 bs = new BeeStrategy(3);
-		 bs.setEliteBeesNum(1);
-		 bs.setEliteSitesNum(1);		
-		 bs.setSitesnum(1);
-		 bs.setPatchSize(2);
-		 CreateBeeWithDFS df = new CreateBeeWithDFS();
-		 bs.setNeighbourBeeCreator(df);
-		 bs.setRandomBeeCreator(df);
+//		 bs = new BeeStrategy(3);
+//		 bs.setEliteBeesNum(1);
+//		 bs.setEliteSitesNum(1);		
+//		 bs.setSitesnum(1);
+//		 bs.setPatchSize(2);
+//		 CreateBeeWithDFS df = new CreateBeeWithDFS();
+//		 CreateBeeWithHillClimbing cbwhc = new CreateBeeWithHillClimbing();
+//		 bs.setNeighbourBeeCreator(df);
+//		 bs.setRandomBeeCreator(cbwhc);
 		 System.out.println("hali4");
 		  fps = new FixedPriorityStrategy()
          .withRulePriority(this.getInTheVehichle, 4)
@@ -159,8 +163,8 @@ public class setUp {
 	}
 	public void startProject(){
 		//bs.explore();
-		dse.startExploration(bs);
-	//	dse.startExploration(Strategies.createDFSStrategy(24));
+//		dse.startExploration(bs);
+		dse.startExploration(Strategies.createDFSStrategy(24));
 		//dse.startExploration(fps);
 		//dse.startExploration(bs);
 	}

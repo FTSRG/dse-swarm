@@ -32,7 +32,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 		try{
 		while (!interrupted) {
 			while (searchablePatches == null) {
-				throw new Exception("not all Collections are initialized in Beestrategy");
+				throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
 			}
 			if (searchablePatches.size() == 0) {
 				waitfunction();
@@ -49,7 +49,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
 					context.getDesignSpaceManager().undoLastTransformation();
 				}
-				List<ITransition> transitions = entry.getPatch().getPatch().getFullTransitionTrajectory();
+				List<ITransition> transitions = entry.getActualState().getFullTransitionTrajectory();
 				for (ITransition transition : transitions) {
 					context.getDesignSpaceManager().fireActivation(transition);
 				}

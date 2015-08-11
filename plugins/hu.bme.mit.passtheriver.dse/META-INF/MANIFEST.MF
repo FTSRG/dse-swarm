@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.ui,
  hu.bme.mit.passtheriver.model;bundle-version="0.1.0",
  hu.bme.mit.passtheriver.patterns;bundle-version="0.0.1",
  org.eclipse.viatra.dse.base,
- org.eclipse.viatra.dse.beestrategy
+ org.eclipse.viatra.dse.beestrategy,
+ org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: constraints,

@@ -1,20 +1,17 @@
 package program;
 
-import org.eclipse.emf.common.notify.Notifier;
-import org.eclipse.viatra.dse.statecode.IStateSerializer;
-import org.eclipse.viatra.dse.statecode.IStateSerializerFactory;
-
-import ServerPark.UsedMachines;
+import org.eclipse.viatra.dse.statecode.IStateCoder;
+import org.eclipse.viatra.dse.statecode.IStateCoderFactory;
 
 
-	public class SerializerFactory implements IStateSerializerFactory{
+	public class SerializerFactory implements IStateCoderFactory{
 
 	    
 
 		@Override
-		public IStateSerializer createStateSerializer(Notifier modelRoot)
-				throws UnsupportedMetaModel {
-			return new Serializer((UsedMachines)modelRoot);
+		public IStateCoder createStateCoder() {
+			// TODO Auto-generated method stub
+			return new Serializer();
 		}
 
 	}

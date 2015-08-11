@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated dseHelperModel -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="ServerPark.presentation.ServerParkModelWizardID"
+            name="%_UI_ServerParkModelWizard_label"
+            class="ServerPark.presentation.ServerParkModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/ServerParkModelFile.gif">
+         <description>%_UI_ServerParkModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated dseHelperModel -->
+      <editor
+            id="ServerPark.presentation.ServerParkEditorID"
+            name="%_UI_ServerParkEditor_label"
+            icon="icons/full/obj16/ServerParkModelFile.gif"
+            extensions="serverpark"
+            class="ServerPark.presentation.ServerParkEditor"
+            contributorClass="ServerPark.presentation.ServerParkActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>

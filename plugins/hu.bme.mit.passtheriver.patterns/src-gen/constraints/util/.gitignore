@@ -66,3 +66,7 @@
 /TravelerQuerySpecification.java
 /UsedSeatsProcessor.java
 /UsedSeatsQuerySpecification.java
+/.PassangerOnLandProcessor.java._trace
+/.PassangerOnLandQuerySpecification.java._trace
+/.PassangerOnVechichleToTargetProcessor.java._trace
+/.PassangerOnVechichleToTargetQuerySpecification.java._trace

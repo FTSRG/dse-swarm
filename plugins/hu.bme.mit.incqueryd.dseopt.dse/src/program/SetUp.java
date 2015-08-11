@@ -1,54 +1,48 @@
 package program;
 
+import java.util.Collection;
+
+import org.eclipse.incquery.runtime.api.IPatternMatch;
+import org.eclipse.incquery.runtime.exception.IncQueryException;
+import org.eclipse.viatra.dse.api.DSETransformationRule;
+import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
+import org.eclipse.viatra.dse.api.Solution;
+import org.eclipse.viatra.dse.api.Strategies;
+import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
+import org.eclipse.viatra.dse.api.strategy.impl.HillClimbingStrategy;
+import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
+import org.eclipse.viatra.dse.objectives.ActivationFitnessProcessor;
+import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
+import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
+import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
+
+import ServerPark.Machines;
+import ServerPark.ServerParkFactory;
+import ServerPark.UsedMachines;
 import hu.bme.mit.incqueryd.dseopt.queries.ChangeProcessLocationMatch;
 import hu.bme.mit.incqueryd.dseopt.queries.StartServerMatch;
-import hu.bme.mit.incqueryd.dseopt.queries.StopServerMatch;
 import hu.bme.mit.incqueryd.dseopt.queries.util.FreeMemoryNegativQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.NotEndStateQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.NotStoppedOrUsedMachinesQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.StoppedAndUsedMachinesQuerySpecification;
-
-import java.util.Collection;
-import java.util.List;
-
-import org.eclipse.incquery.runtime.api.IPatternMatch;
-import org.eclipse.incquery.runtime.exception.IncQueryException;
-import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
-import org.eclipse.viatra.dse.api.Solution;
-import org.eclipse.viatra.dse.api.Strategies;
-import org.eclipse.viatra.dse.api.TransformationRule;
-import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
-import org.eclipse.viatra.dse.api.strategy.impl.HillClimbingStrategy;
-import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.designspace.api.ITransition;
-import org.eclipse.viatra.dse.objectives.ActivationFitnessProcessor;
-import org.eclipse.viatra.dse.objectives.Comparators;
-import org.eclipse.viatra.dse.objectives.IGlobalConstraint;
-import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
-import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
-import org.eclipse.viatra.dse.objectives.impl.TrajectoryCostSoftObjective;
-import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
-import org.eclipse.viatra.dse.solutionstore.StrategyDependentSolutionStore;
-
 import startproblem.StartProblem;
 import transformations.ChangeProcessLocation;
 import transformations.StartMachine;
 import transformations.StopMachine;
-import ServerPark.Integer;
-import ServerPark.Machines;
-import ServerPark.ServerParkFactory;
-import ServerPark.UsedMachines;
 
 public class SetUp {
 	 protected DesignSpaceExplorer dse;
 	 protected UsedMachines model;
 	 protected ServerParkFactory factory;
 	 //dseTransformationRule
-	 protected TransformationRule<ChangeProcessLocationMatch> changeProcessLocation;
-	 protected TransformationRule<StartServerMatch> startMachine;
-	 protected TransformationRule<StopServerMatch> stopMachine;
+	 protected DSETransformationRule<?, ?> changeProcessLocation;
+	 protected DSETransformationRule<?, ?> startMachine;
+	 protected DSETransformationRule<?, ?> stopMachine;
+	 
 	 FixedPriorityStrategy fps;
 	 HillClimbingStrategy hcs;
+	 BeeStrategy3 bs;
 	 
 	 private final class CostOfStartComputer implements ActivationFitnessProcessor {
 	       
@@ -85,6 +79,7 @@ public class SetUp {
 		 dse = new DesignSpaceExplorer();
 		
 		 model = new StartProblem().getModel();
+		System.out.println( model.getAllMachines().get(0).getIP());
 		 dse.setInitialModel(model);
 		
 
@@ -97,18 +92,19 @@ public class SetUp {
 		 dse.addObjective(new ModelQueriesHardObjective("MyHardObjective")
 		 .withConstraint(NotEndStateQuerySpecification.instance()));
 		 
-		 CostOfChangeProcessLocation costOfChangeProcessLocation = new CostOfChangeProcessLocation();
-		 CostOfStartComputer costOfStartComputer = new CostOfStartComputer();
+//		 
+//		 CostOfChangeProcessLocation costOfChangeProcessLocation = new CostOfChangeProcessLocation();
+//		 CostOfStartComputer costOfStartComputer = new CostOfStartComputer();
 		 
-		 dse.addObjective(new TrajectoryCostSoftObjective()
-		 .withActivationCost(changeProcessLocation,  costOfChangeProcessLocation)
-		 .withActivationCost(startMachine, costOfStartComputer)
-      //   .withRuleCost(startMachine, 4)
-         .withRuleCost(stopMachine, 3)
-     //    .withRuleCost(changeProcessLocation, 1)
-         .withComparator(Comparators.LOWER_IS_BETTER)
-         .withLevel(1)
-		 );
+//		 dse.addObjective(new TrajectoryCostSoftObjective()
+//		 .withActivationCost(changeProcessLocation,  costOfChangeProcessLocation)
+//		 .withActivationCost(startMachine, costOfStartComputer)
+//      //   .withRuleCost(startMachine, 4)
+//         .withRuleCost(stopMachine, 3)
+//     //    .withRuleCost(changeProcessLocation, 1)
+//         .withComparator(Comparators.LOWER_IS_BETTER)
+//         .withLevel(1)
+//		 );
 		 /*	.withComparator(new Comparator(){
 
 				@Override
@@ -124,7 +120,7 @@ public class SetUp {
 		 		
 		 	}));*/
 
-		 dse.setSerializerFactory(new SerializerFactory());
+		 dse.setStateCoderFactory(new SerializerFactory());
 		 dse.addTransformationRule(this.startMachine);
 		 dse.addTransformationRule(this.stopMachine);
 		 dse.addTransformationRule(this.changeProcessLocation);
@@ -136,7 +132,7 @@ public class SetUp {
 		    );
 		
 	
-		 dse.setMaxNumberOfThreads(1);
+		 dse.setMaxNumberOfThreads(3);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 
 		// hcs = new HillClimbingStrategy();
@@ -147,13 +143,27 @@ public class SetUp {
          .withRulePriority(this.startMachine, 4)
          .withRulePriority(this.stopMachine, 4).withDepthLimit(5);
 		 
-		 
+		bs = new BeeStrategy3(new CreateBeeWithDFS(),new CreateBeeWithDFS());
+		bs.setBestSitesNum(2);
+		bs.setEliteBeesNum(2);
+		bs.setEliteSitesNum(1);
+		bs.setNeighbourBeeCreator(new CreateBeeWithDFS());
+		try {
+			bs.setNumberOfMaxBees(4);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		bs.setOtherBeesNum(1);
+		bs.setPatchSize(1);
+		bs.setSitesnum(2);
 		
 		 
 	}
 	public void startProject(){
-		//dse.startExploration(Strategies.createDFSStrategy(5));
-		dse.startExploration(fps);
+		dse.startExploration(Strategies.createDFSStrategy(5));
+//		dse.startExploration(bs);
+		//dse.startExploration(fps);
 //		 dse.setSolutionStore(new StrategyDependentSolutionStore());
 //	     dse.startExploration(new HillClimbingStrategy());
 //	

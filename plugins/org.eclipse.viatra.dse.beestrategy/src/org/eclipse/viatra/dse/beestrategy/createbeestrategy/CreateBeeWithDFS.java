@@ -12,6 +12,7 @@ import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
 import org.eclipse.viatra.dse.beestrategy.Patch;
+import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.StupidBee;
 import org.eclipse.viatra.dse.beestrategy.StupidBee.BeeType;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
@@ -21,7 +22,7 @@ import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
-public class CreateBeeWithDFS implements ICreateBee {
+public class CreateBeeWithDFS extends WorkerBeeStrategy {
 
 	private Integer patchSize;
 	private ThreadContext context;
@@ -39,7 +40,10 @@ public class CreateBeeWithDFS implements ICreateBee {
 	public boolean isInterrupted() {
 		return interrupted;
 	}
-
+	protected CreateBeeWithDFS(BeeStrategy3 bs, SearchData sd, HashSet<IState> states){
+		super(bs, sd, states);
+	}
+	
 	/**
 	 * It will set ThreadContext and PatchSize (default == 1) if you would like
 	 * to change patchsize you have to call setpatchsize

@@ -41,12 +41,12 @@ public class StartProblem {
 	private Resource load() {
 		// TODO Auto-generated method stub
 		 ResourceSet resSet = new ResourceSetImpl();
-		String uristring = "D:/eclipse/eclipse_dse/runtime-EclipseApplication/test/startstate.serverpark";
+		String uristring = "D:/git/git/viatra-dse-swarm/plugins/test/beetesztek/teszt6.serverpark";
 		 //String uristring ="D:/eclipse/eclipse_dse/runtime-EclipseApplication/test/helper_incqueryd_machineData.serverpark";
 		 URI uri = URI.createFileURI(uristring);
 		 Resource resource = resSet.getResource(uri, true);
 		 UM = (UsedMachines) resource.getContents().get(0);
-		 //System.out.println(UM.toString());
+		 System.out.println(UM.getAllMachines().get(0).getIP());
 		 
 		 return resource;
 		
