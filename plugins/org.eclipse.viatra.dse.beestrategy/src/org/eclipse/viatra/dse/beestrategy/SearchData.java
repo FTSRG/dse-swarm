@@ -6,22 +6,19 @@ import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
 public class SearchData {
-	//is it random/neighbourBee
+	// is it random/neighbourBee
 	private Boolean hasParent;
-	//if it has Child than we should not use it 
+	// if it has Child than we should not use it
 	private Boolean hasChild;
-	
+
 	private TrajectoryInfo parentTrajectory;
 	private TrajectoryInfo actualState;
 	private Fitness parentfitness;
 	private Fitness ownfitness;
 
-
 	private TrajectoryFitness owntrajectoryFitness;
 	private ICreateBee strategy;
 	private Integer radius;
-
-
 
 	public ICreateBee getStrategy() {
 		return strategy;
@@ -30,8 +27,7 @@ public class SearchData {
 	public void setStrategy(ICreateBee strategy) {
 		this.strategy = strategy;
 	}
-	
-	
+
 	public Fitness getOwnfitness() {
 		return ownfitness;
 	}
@@ -48,7 +44,6 @@ public class SearchData {
 		this.owntrajectoryFitness = owntrajectoryFitness;
 	}
 
-	
 	public Integer getRadiusSize() {
 		return radius;
 	}
@@ -56,7 +51,7 @@ public class SearchData {
 	public void setRadiusSize(Integer radius) {
 		this.radius = radius;
 	}
-	
+
 	public Boolean getHasParent() {
 		return hasParent;
 	}
@@ -78,7 +73,10 @@ public class SearchData {
 	}
 
 	public void setParentTrajectory(TrajectoryInfo parentTrajectory) {
-		this.parentTrajectory = parentTrajectory;
+		if (parentTrajectory == null)
+			this.parentTrajectory = null;
+		else
+			this.parentTrajectory = parentTrajectory.clone();
 	}
 
 	public TrajectoryInfo getActualState() {
@@ -86,7 +84,10 @@ public class SearchData {
 	}
 
 	public void setActualState(TrajectoryInfo actualState) {
-		this.actualState = actualState;
+		if (actualState == null)
+			this.actualState = null;
+		else
+		this.actualState = actualState.clone();
 	}
 
 	public Fitness getParentfitness() {
@@ -96,17 +97,5 @@ public class SearchData {
 	public void setParentfitness(Fitness parentfitness) {
 		this.parentfitness = parentfitness;
 	}
-
-
-
-
-	public Integer getPatchSize() {
-		return radius;
-	}
-
-	public void setPatchSize(Integer patchSize) {
-		this.radius = patchSize;
-	}
-
 
 }

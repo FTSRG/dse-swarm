@@ -33,7 +33,7 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 
 	    private DesignSpaceManager dsm;
 
-	    private double percentOfOpenedStates;
+	    private double percentOfOpenedStates = 0;
 	    private boolean interrupted;
 	    private HillClimbingStrategyState state = HillClimbingStrategyState.TRY_AND_SAVE;
 
@@ -53,30 +53,27 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 
 		private Integer patchSize;
 
-		private Patch patch;
-
-		private Boolean neighbour;
-
-		private String id;
-
-		private BeeStrategy3 bs;
-
-		private HashSet<IState> alreadyFoundStates;
-
-		private StupidBee sb;
 		
-		public CreateBeeWithHillClimbing(BeeStrategy3 bs, SearchData sd, HashSet<IState> states){
-			super(bs, sd, states);
+		@Override
+		public void setSearchData(SearchData sd){
+			this.searchData = sd;
+			radius = sd.getRadiusSize();
+			patchSize = radius;
 		}
-
-	    public CreateBeeWithHillClimbing() {
-	        this(1.001);
-	    }
-
-	    public CreateBeeWithHillClimbing(double percentOfOpenedStates) {
-	        this.percentOfOpenedStates = percentOfOpenedStates;
-	        filterOptions = new FilterOptions().nothingIfCut().untraversedOnly();
-	    }
+		
+		
+		public CreateBeeWithHillClimbing(BeeStrategy3 bs){
+			super(bs);
+		}
+//
+//	    public CreateBeeWithHillClimbing() {
+//	        this(1.001);
+//	    }
+//
+//	    public CreateBeeWithHillClimbing(double percentOfOpenedStates) {
+//	        this.percentOfOpenedStates = percentOfOpenedStates;
+//	        filterOptions = new FilterOptions().nothingIfCut().untraversedOnly();
+//	    }
 
 	    public void init(ThreadContext context) {
 	        this.context = context;
@@ -88,76 +85,7 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 	        }
 	    }
 
-	    public ITransition selectNextTransition(boolean lastWasSuccessful) {
-
-	        while (!interrupted && patchSize>0) {
-	            if (dsm.getTransitionsFromCurrentState().size() <= 0) {
-	                if (dsm.getCurrentState().getTraversalState() == TraversalStateType.GOAL) {
-	                    solutionStore.newSolution(context);
-	                }
-	                logger.debug("Reached end of design space.");
-	                return null;
-	            }
-
-	            Collection<? extends ITransition> transitions = dsm.getTransitionsFromCurrentState(filterOptions);
-
-	            if (transitions.size() <= 0) {
-	                logger.debug("No more transitions to try.");
-	                state = HillClimbingStrategyState.COMPARE_AND_STEP;
-	            }
-
-	            if (state == HillClimbingStrategyState.TRY_AND_SAVE) {
-	                ITransition transition;
-	                if (percentOfOpenedStates >= 1) {
-	                    transition = transitions.iterator().next();
-	                } else {
-	                    if (percentOfOpenedStates <= triedTransitions / dsm.getTransitionsFromCurrentState().size()) {
-	                        state = HillClimbingStrategyState.COMPARE_AND_STEP;
-	                        continue;
-	                    } else {
-	                        int index = rnd.nextInt(transitions.size());
-	                        Iterator<? extends ITransition> iterator = transitions.iterator();
-	                        while (iterator.hasNext() && index != 0) {
-	                            index--;
-	                            iterator.next();
-	                        }
-	                        transition = iterator.next();
-	                    }
-	                    triedTransitions++;
-	                }
-	                logger.debug("Trying " + transition.getId());
-	                return transition;
-	            } else {
-	                logger.debug("Comparing fitnesses.");
-
-	                TrajectoryFitness bestTrajectoryFitness = objectiveComparatorHelper.getRandomBest();
-	                objectiveComparatorHelper.clearTrajectoryFitnesses();
-	                
-	                int compare = objectiveComparatorHelper.compare(bestFitness, bestTrajectoryFitness.fitness);
-	                
-	                if (compare >= 0) {
-	                    context.calculateFitness();
-	                    solutionStore.newSolution(context);
-	                    logger.debug(dsm.getTrajectoryInfo().toString());
-	                    return null;
-	                }
-	                else {
-	                    bestFitness = bestTrajectoryFitness.fitness;
-	                }
-
-	                triedTransitions = 0;
-	                state = HillClimbingStrategyState.TRY_AND_SAVE;
-
-	                ITransition bestTransition = bestTrajectoryFitness.trajectory[0];
-	                logger.debug("Best transition: " + bestTransition.getId() + " with fitness " + bestFitness);
-	                dsm.fireActivation(bestTransition);
-	                patchSize--;
-	            }
-
-	        }
-
-	        return null;
-	    }
+	   
 
 	    public void newStateIsProcessed(boolean isAlreadyTraversed, Fitness fitness, boolean constraintsNotSatisfied) {
 
@@ -195,116 +123,100 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 			
 		}
 
-		@Override
-		public void explore() {
-			
-		}
-
-		@Override
-		public synchronized void interruptStrategy() {
-			this.interrupted = true;
-
-		}
 		
 
-		@Override
-		public String getID() {
-			return this.id;
-		}
-
-		@Override
-		public Patch createRandomBee() {
-			while (dsm.getTrajectoryFromRoot().size() != 0) {
-				dsm.undoLastTransformation();
-			}
-			TrajectoryInfo ti = dsm.getTrajectoryInfo().clone();
-			while (patchSize > 0) {
-				ITransition nextTran = selectNextTransition(true);
-				while (nextTran == null && dsm.getTrajectoryFromRoot().size() >= 0) {
-					dsm.undoLastTransformation();
-					nextTran = selectNextTransition(true);
-					ti.stepBack();
-				}
-				if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0) return null;
-				
-				dsm.fireActivation(nextTran);
-				if (this.isAlreadyFoundInThisStrategy(dsm.getCurrentState()))
-					dsm.undoLastTransformation();
-				
-				patchSize--;
-			}
-			Patch p = new Patch();
-			if (ti.getTransitionTrajectory().size() != 0)
-				p.initPatch(ti, context);
-			p.setBestfitness(context.calculateFitness());
-			p.initPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
-			this.patch = p;
-			return p;
-		}
+		
+		
 
 		
-		public boolean isAlreadyFoundInThisStrategy(IState iState){
-			if(this.alreadyFoundStates==null){
-				alreadyFoundStates = new HashSet<IState>();
-				alreadyFoundStates.add(iState);
-				return false;
-			}
-			 return alreadyFoundStates.add(iState);
-			
-		}
+//		@Override
+//		public Patch createRandomBee() {
+//			while (dsm.getTrajectoryFromRoot().size() != 0) {
+//				dsm.undoLastTransformation();
+//			}
+//			TrajectoryInfo ti = dsm.getTrajectoryInfo().clone();
+//			while (patchSize > 0) {
+//				ITransition nextTran = selectNextTransition(true);
+//				while (nextTran == null && dsm.getTrajectoryFromRoot().size() >= 0) {
+//					dsm.undoLastTransformation();
+//					nextTran = selectNextTransition(true);
+//					ti.stepBack();
+//				}
+//				if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0) return null;
+//				
+//				dsm.fireActivation(nextTran);
+//				if (this.isAlreadyFoundInThisStrategy(dsm.getCurrentState()))
+//					dsm.undoLastTransformation();
+//				
+//				patchSize--;
+//			}
+//			Patch p = new Patch();
+//			if (ti.getTransitionTrajectory().size() != 0)
+//				p.initPatch(ti, context);
+//			p.setBestfitness(context.calculateFitness());
+//			p.initPatch(context.getDesignSpaceManager().getTrajectoryInfo(), context);
+//			this.patch = p;
+//			return p;
+//		}
 		
-		@Override
-		public StupidBee createNeighbourBee() {
-			boolean start = true;
-			Integer deepness = 0;
-			TrajectoryInfo actualState = patch.getPatch().clone();
-			// this.setThreadContextTo(patch.getPatch());
-
-			// step patchsize many steps
-			for (int i = 0; i < patchSize; i++) {
-				ITransition nextTran = this.selectNextTransition(true);
-				while (nextTran == null && deepness >= 0) {
-					dsm.undoLastTransformation();
-					actualState.stepBack();
-					deepness--;
-					nextTran = this.selectNextTransition(false);
-				}
-				if (deepness == 0 && start == false) {
-					return null;
-				}
-				start = false;
-				context.getDesignSpaceManager().fireActivation(nextTran);
-				patchSize--;
-				deepness++;
-				actualState.addStep(nextTran);
-			}
-			return generateStupidBee(actualState);
-		}
+//		public boolean isAlreadyFoundInThisStrategy(IState iState){
+//			if(this.alreadyFoundStates==null){
+//				alreadyFoundStates = new HashSet<IState>();
+//				alreadyFoundStates.add(iState);
+//				return false;
+//			}
+//			 return alreadyFoundStates.add(iState);
+//			
+//		}
 		
-		private synchronized StupidBee generateStupidBee(TrajectoryInfo actualState) {
-			StupidBee sb = new StupidBee();
-			sb.init(actualState, BeeType.Neighbour, context.calculateFitness());
-			TrajectoryFitness tf = new TrajectoryFitness(actualState, context.getLastFitness());
-			sb.setTrajectoryFitness(tf);
-			// patch.getBeeList().add(sb);
-			// this.numberOfActiveBees++;
-			// TODO szinkronizálni!!!!!!!!!!
-			this.patch.getBeeList().add(sb);
-			this.bs.increasenumberOfActiveBees();
-			this.sb = sb;
-			// System.out.println("hali");
-			//TODO
-			//System.out.println(sb.getActualState().getCurrentState().getId());
-			this.interruptStrategy();
-			return sb;
+//		@Override
+//		public StupidBee createNeighbourBee() {
+//			boolean start = true;
+//			Integer deepness = 0;
+//			TrajectoryInfo actualState = patch.getPatch().clone();
+//			// this.setThreadContextTo(patch.getPatch());
+//
+//			// step patchsize many steps
+//			for (int i = 0; i < patchSize; i++) {
+//				ITransition nextTran = this.selectNextTransition(true);
+//				while (nextTran == null && deepness >= 0) {
+//					dsm.undoLastTransformation();
+//					actualState.stepBack();
+//					deepness--;
+//					nextTran = this.selectNextTransition(false);
+//				}
+//				if (deepness == 0 && start == false) {
+//					return null;
+//				}
+//				start = false;
+//				context.getDesignSpaceManager().fireActivation(nextTran);
+//				patchSize--;
+//				deepness++;
+//				actualState.addStep(nextTran);
+//			}
+//			return generateStupidBee(actualState);
+//		}
+		
+//		private synchronized StupidBee generateStupidBee(TrajectoryInfo actualState) {
+//			StupidBee sb = new StupidBee();
+//			sb.init(actualState, BeeType.Neighbour, context.calculateFitness());
+//			TrajectoryFitness tf = new TrajectoryFitness(actualState, context.getLastFitness());
+//			sb.setTrajectoryFitness(tf);
+//			// patch.getBeeList().add(sb);
+//			// this.numberOfActiveBees++;
+//			// TODO szinkronizálni!!!!!!!!!!
+//			this.patch.getBeeList().add(sb);
+//			this.bs.increasenumberOfActiveBees();
+//			this.sb = sb;
+//			// System.out.println("hali");
+//			//TODO
+//			//System.out.println(sb.getActualState().getCurrentState().getId());
+//			this.interruptStrategy();
+//			return sb;
+//
+//		}
 
-		}
 
-		@Override
-		public void setPatch(Patch patch) {
-			this.patch = patch;
-			
-		}
 
 		@Override
 		public void setStopCond(Object stopcond) {
@@ -312,28 +224,85 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 			
 		}
 
-		@Override
-		public void setIfNeighbour(Boolean neighbour) {
-			this.neighbour = neighbour;
-			
-		}
 
-		@Override
-		public void setMainStrategy(IStrategy beeStrategy) {
-			this.bs = (BeeStrategy3) beeStrategy;
+	
 
-		}
-
-		@Override
-		public void setStatesInTrajectory(HashSet<IState> states) {
-			// TODO Auto-generated method stub
-			
-		}
 
 		@Override
 		ITransition selectNextTransition() {
+			 while (!interrupted && patchSize>0) {
+		            if (dsm.getTransitionsFromCurrentState().size() <= 0) {
+		                if (dsm.getCurrentState().getTraversalState() == TraversalStateType.GOAL) {
+		                    solutionStore.newSolution(context);
+		                }
+		                logger.debug("Reached end of design space.");
+		                return null;
+		            }
+
+		            Collection<? extends ITransition> transitions = dsm.getTransitionsFromCurrentState(filterOptions);
+
+		            if (transitions.size() <= 0) {
+		                logger.debug("No more transitions to try.");
+		                state = HillClimbingStrategyState.COMPARE_AND_STEP;
+		            }
+
+		            if (state == HillClimbingStrategyState.TRY_AND_SAVE) {
+		                ITransition transition;
+		                if (percentOfOpenedStates >= 1) {
+		                    transition = transitions.iterator().next();
+		                } else {
+		                    if (percentOfOpenedStates <= triedTransitions / dsm.getTransitionsFromCurrentState().size()) {
+		                        state = HillClimbingStrategyState.COMPARE_AND_STEP;
+		                        continue;
+		                    } else {
+		                        int index = rnd.nextInt(transitions.size());
+		                        Iterator<? extends ITransition> iterator = transitions.iterator();
+		                        while (iterator.hasNext() && index != 0) {
+		                            index--;
+		                            iterator.next();
+		                        }
+		                        transition = iterator.next();
+		                    }
+		                    triedTransitions++;
+		                }
+		                logger.debug("Trying " + transition.getId());
+		                return transition;
+		            } else {
+		                logger.debug("Comparing fitnesses.");
+
+		                TrajectoryFitness bestTrajectoryFitness = objectiveComparatorHelper.getRandomBest();
+		                objectiveComparatorHelper.clearTrajectoryFitnesses();
+		                
+		                int compare = objectiveComparatorHelper.compare(bestFitness, bestTrajectoryFitness.fitness);
+		                
+		                if (compare >= 0) {
+		                    context.calculateFitness();
+		                    solutionStore.newSolution(context);
+		                    logger.debug(dsm.getTrajectoryInfo().toString());
+		                    return null;
+		                }
+		                else {
+		                    bestFitness = bestTrajectoryFitness.fitness;
+		                }
+
+		                triedTransitions = 0;
+		                state = HillClimbingStrategyState.TRY_AND_SAVE;
+
+		                ITransition bestTransition = bestTrajectoryFitness.trajectory[0];
+		                logger.debug("Best transition: " + bestTransition.getId() + " with fitness " + bestFitness);
+		                dsm.fireActivation(bestTransition);
+		                patchSize--;
+		            }
+
+		        }
+
+		        return null;
+		}
+
+		@Override
+		public void setInitialState(SearchData sd) {
 			// TODO Auto-generated method stub
-			return null;
+			
 		}
 
 }

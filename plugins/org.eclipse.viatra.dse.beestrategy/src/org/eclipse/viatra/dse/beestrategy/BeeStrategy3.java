@@ -1,8 +1,8 @@
 package org.eclipse.viatra.dse.beestrategy;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.viatra.dse.api.DSEException;
@@ -10,36 +10,34 @@ import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ExplorerThread;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.BeeStrategyFactory;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.BeeStrategyFactory.StrategiesOfBeeStrategy;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
-import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
-import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore.StopExecutionType;
 
 public class BeeStrategy3 implements IStrategy {
-	public BeeStrategy3(){
-		
+	public BeeStrategy3() {
+
 	};
 
-	public BeeStrategy3(ICreateBee randomBeeCreator,ICreateBee neighbourBeeCreator) {
+	public BeeStrategy3(StrategiesOfBeeStrategy randomBeeCreator, StrategiesOfBeeStrategy neighbourBeeCreator) {
 		this.randomSearchCreator = randomBeeCreator;
 		this.localSearchCreator = neighbourBeeCreator;
 	}
 
-	private ArrayList<Patch> patches;
-	
+	private ArrayList<SearchData> patches;
+
 	private volatile ConcurrentLinkedQueue<SearchData> searchablePatches = new ConcurrentLinkedQueue<SearchData>();
 	private volatile ConcurrentLinkedQueue<SearchData> instancesToBeChecked = new ConcurrentLinkedQueue<SearchData>();
 	private ThreadContext context;
 	private DesignSpaceManager dsm;
 	private ISolutionStore solutionStore;
 	private boolean interrupted = false;
-	private ArrayList<Patch> bestpatches;
+	private ArrayList<SearchData> bestpatches;
 	private StopExecutionType set = StopExecutionType.CONTINUE;
 	private Integer sitesnum = 3;
 	private int eliteSitesNum = 1;
@@ -60,10 +58,15 @@ public class BeeStrategy3 implements IStrategy {
 	private Integer radiusOfPatch = 4;
 	private volatile int numberOfActiveBees = 0;
 	private int numberOfMaxBees = 3;
-
-	protected ICreateBee randomSearchCreator;
-	protected ICreateBee localSearchCreator;
+	protected StrategiesOfBeeStrategy randomSearchCreator;
+	protected StrategiesOfBeeStrategy localSearchCreator;
+	// protected ICreateBee randomSearchCreator;
+	// protected ICreateBee localSearchCreator;
 	private int iterations = 1;
+	protected BeeStrategyFactory beeFactory = new BeeStrategyFactory();
+
+	private IState rootState;
+	private TrajectoryInfo rootTrajectory;
 
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
@@ -72,7 +75,7 @@ public class BeeStrategy3 implements IStrategy {
 			throw new DSEException(
 					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
 		}
-		this.patches = new ArrayList<Patch>();
+		this.patches = new ArrayList<SearchData>();
 		this.context = context;
 		this.dsm = context.getDesignSpaceManager();
 		this.solutionStore = context.getGlobalContext().getSolutionStore();
@@ -80,14 +83,15 @@ public class BeeStrategy3 implements IStrategy {
 
 	@Override
 	public void explore() {
-		if(context.getGlobalContext().getThreadPool().getMaximumPoolSize()>1)
-		this.exploreParalell();
-		else this.exploreOneThread();
+		if (context.getGlobalContext().getThreadPool().getMaximumPoolSize() > 1)
+			this.exploreParalell();
+		else
+			this.exploreOneThread();
 	}
 
 	private void exploreOneThread() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -108,12 +112,14 @@ public class BeeStrategy3 implements IStrategy {
 	}
 
 	private void exploreParalell() {
+		this.rootState = dsm.getCurrentState();
+		this.rootTrajectory = dsm.getTrajectoryInfo();
 		// we have one main thread, and the user can give us the number of the
 		// workerthreads ( DesignSpaceExplorer.setMaxNumberOfThreads(x))
 		startWorkerThreads();
 
 		// number of bestpatches is set at the creation of the strategy
-		this.bestpatches = new ArrayList<Patch>();
+		this.bestpatches = new ArrayList<SearchData>();
 		// here we create random pathces in the exploration space with the help
 		// of the workerthreads
 		for (int i = 0; i < numberOfMaxBees; i++) {
@@ -149,6 +155,7 @@ public class BeeStrategy3 implements IStrategy {
 					RecruitedBeesNum = otherBeesNum;
 				for (int j = 0; j < RecruitedBeesNum; j++) {
 					this.createNeighbourhoodBee(this.bestpatches.get(i), radiusOfRandomSearch);
+					bestpatches.get(i).setHasChild(true);
 				}
 			}
 
@@ -164,8 +171,6 @@ public class BeeStrategy3 implements IStrategy {
 					return;
 				getBackBees();
 			}
-			// select the best bee in each patch
-			this.selectBestBeeInPatch();
 
 		}
 	}
@@ -180,31 +185,15 @@ public class BeeStrategy3 implements IStrategy {
 		SearchData sd = getFromConcurrentList();
 		if (sd != null) {
 			this.decreasenumberOfActiveBees();
-			if (sd.getHasParent() == true) {
-				// it is a StupidBee
-				StupidBee sb = sd.getStupidBee();
-				if (sb.getFitness() == null)
-					return;
-				isSolution(sb);
-				if (this.interrupted == true)
-					return;
-				for (Patch patch : patches) {
-					if (patch.getPatch().equals(sb.getInitialState())) {
-						patch.getBeeList().add(sb);
-						break;
-					}
-				}
+			if (sd.getParentTrajectory() == null)
+				return;
+			if (sd.getOwnfitness() == null)
+				return;
+			isSolution(sd);
+			if (this.interrupted == true)
+				return;
+			patches.add(sd);
 
-			} else {
-				Patch p = sd.getPatch();
-				if (p.getBestfitness() == null)
-					return;
-				this.patches.add(p);
-				if (isSolution(p))
-					;
-				if (interrupted == true)
-					return;
-			}
 		} else {
 			wakeThreads();
 		}
@@ -220,15 +209,15 @@ public class BeeStrategy3 implements IStrategy {
 	 * will get into the SolutionStore. The method sets the <i>interrupted</i>
 	 * and <i>set</i> variables
 	 * 
-	 * @param bee
+	 * @param sd
 	 * @return boolean
 	 */
-	public boolean isSolution(StupidBee bee) {
-		if (bee != null && bee.getFitness().isSatisifiesHardObjectives()) {
+	public boolean isSolution(SearchData sd) {
+		if (sd != null && sd.getOwnfitness().isSatisifiesHardObjectives()) {
 			while (dsm.getTrajectoryFromRoot().size() != 0) {
 				dsm.undoLastTransformation();
 			}
-			TrajectoryInfo ti = bee.getActualState();
+			TrajectoryInfo ti = sd.getActualState();
 			for (ITransition tran : ti.getFullTransitionTrajectory()) {
 				dsm.fireActivation(tran);
 			}
@@ -292,64 +281,53 @@ public class BeeStrategy3 implements IStrategy {
 
 	}
 
-	private ArrayList<Patch> getBestPatches(Object sitesnum2) {
-		context.getObjectiveComparatorHelper().clearTrajectoryFitnesses();
-		this.bestpatches = new ArrayList<Patch>();
-		for (Patch patch : patches) {
-			TrajectoryFitness tf = new TrajectoryFitness(patch.getBestBee().getActualState(),
-					patch.getBestBee().getFitness());
-			patch.getBestBee().setTrajectoryFitness(tf);
-			context.getObjectiveComparatorHelper().addTrajectoryFitness(tf);
-		}
+	private ArrayList<SearchData> getBestPatches(Object sitesnum2) {
 
-		List<ArrayList<TrajectoryFitness>> fitnessFronts = context.getObjectiveComparatorHelper().getFronts();
+		Collections.sort(this.patches, new Comparator<SearchData>() {
 
-		// go throw all trajectories, and get the front, and till the size of
-		// the front is smaller than the given number we add a new patch to them
-		for (ArrayList<TrajectoryFitness> arrayList : fitnessFronts) {
-			for (TrajectoryFitness trajectoryFitness : arrayList) {
-				for (Patch p : patches) {
-					if (p.getBestBee().trajectoryFitness.equals(trajectoryFitness)) {
-						this.bestpatches.add(p);
-					}
-					if (bestpatches.size() >= bestSitesNum)
-						break;
-				}
-				if (bestpatches.size() >= bestSitesNum)
-					break;
+			@Override
+			public int compare(SearchData o1, SearchData o2) {
+				return context.getObjectiveComparatorHelper().compare(o1.getOwnfitness(), o2.getOwnfitness());
+
 			}
-			if (bestpatches.size() >= bestSitesNum)
-				break;
+
+		});
+
+		this.bestpatches = new ArrayList<SearchData>();
+		int length = this.bestSitesNum;
+		if (bestSitesNum > patches.size())
+			length = patches.size();
+		for (int i = 0; i < length; i++) {
+			bestpatches.add(patches.get(i));
 		}
-		patches = bestpatches;
 		return bestpatches;
 	}
 
-	private void selectBestBeeInPatch() {
-		ObjectiveComparatorHelper och = context.getObjectiveComparatorHelper();
-		if (patches.size() == 0)
-			interruptStrategy();
-		for (Patch patch : patches) {
-			och.clearTrajectoryFitnesses();
-			if (patch.getBeeList().size() != 0) {
-
-				for (StupidBee beechan : patch.getBeeList()) {
-					och.addTrajectoryFitness(beechan.getTrajectoryFitness());
-				}
-				TrajectoryFitness tf = och.getRandomBest();
-				for (StupidBee beechan : patch.getBeeList()) {
-					if (beechan.getTrajectoryFitness().equals(tf)) {
-						patch.bestBee = beechan;
-						patch.setBeeList(new ArrayList<StupidBee>());
-						patch.patch = beechan.getActualState();
-						break;
-					}
-				}
-			}
-
-		}
-
-	}
+	// private void selectBestBeeInPatch() {
+	// ObjectiveComparatorHelper och = context.getObjectiveComparatorHelper();
+	// if (patches.size() == 0)
+	// interruptStrategy();
+	// for (Patch patch : patches) {
+	// och.clearTrajectoryFitnesses();
+	// if (patch.getBeeList().size() != 0) {
+	//
+	// for (StupidBee beechan : patch.getBeeList()) {
+	// och.addTrajectoryFitness(beechan.getTrajectoryFitness());
+	// }
+	// TrajectoryFitness tf = och.getRandomBest();
+	// for (StupidBee beechan : patch.getBeeList()) {
+	// if (beechan.getTrajectoryFitness().equals(tf)) {
+	// patch.bestBee = beechan;
+	// patch.setBeeList(new ArrayList<StupidBee>());
+	// patch.patch = beechan.getActualState();
+	// break;
+	// }
+	// }
+	// }
+	//
+	// }
+	//
+	// }
 
 	/**
 	 * Creates a neighbourBee in a given patch.
@@ -360,29 +338,26 @@ public class BeeStrategy3 implements IStrategy {
 	 *            size of the trajectory of the neighbourbee
 	 * @return
 	 */
-	private boolean createNeighbourhoodBee(Patch patch, Integer patchSize2) {
-		if (localSearchCreator != null) {
-			CreateBeeWithDFS cbwd = new CreateBeeWithDFS();
-			cbwd.setIfNeighbour(true);
-			cbwd.setPatch(patch);
-			cbwd.setStopCond(patchSize2);
-			cbwd.setBs(this);
-
+	private boolean createNeighbourhoodBee(SearchData oldSearchData, Integer patchSize2) {
+		if (localSearchCreator != null && oldSearchData != null) {
 			SearchData sd = new SearchData();
-			sd.setStrategy(cbwd);
-			sd.setPatch(patch);
-			sd.setPatchsize(patchSize2);
-			sd.setIsneighbour(true);
+			ICreateBee strategy = this.beeFactory.buildstrategy(this.localSearchCreator, this);
+			strategy.setInitialState(sd);
+			strategy.setMainStrategy(this);
+			strategy.setSearchData(sd);
+			strategy.setStopCond(patchSize2);
+			sd.setStrategy(strategy);
+			sd.setHasChild(false);
+
+			sd.setParentTrajectory(oldSearchData.getActualState());
+			sd.setHasParent(true);
+			sd.setParentfitness(oldSearchData.getOwnfitness());
+			sd.setRadiusSize(patchSize2);
+
 			return addToSearchablePatches(sd);
 		}
 
 		return false;
-	}
-	private boolean createNeighbourhoddBee(SearchData sd, Integer patchSize2){
-		if(localSearchCreator!=null){
-			if(localSearchCreator!=null){
-			}
-		}
 	}
 
 	/**
@@ -414,29 +389,26 @@ public class BeeStrategy3 implements IStrategy {
 	 * @return
 	 */
 	private Boolean createRandomBee(Integer patchSize2) {
-		if (this.randomSearchCreator != null) {
-			ICreateBee icb = null;
-			if (randomSearchCreator instanceof CreateBeeWithDFS) {
-				icb = new CreateBeeWithDFS();
-			}
-			if (randomSearchCreator instanceof CreateBeeWithHillClimbing) {
-				icb = new CreateBeeWithHillClimbing();
-			}
-			Patch p = new Patch();
-			p.initPatch(dsm.getTrajectoryInfo(), context);
-			icb.setPatch(null);
-			icb.setStopCond(patchSize2);
-			icb.setIfNeighbour(false);
-			icb.setMainStrategy(this);
+
+		if (randomSearchCreator != null) {
 			SearchData sd = new SearchData();
-			sd.setIsneighbour(false);
-			sd.setPatchsize(patchSize2);
-			sd.setStrategy(icb);
-			sd.setPatch(p);
+			ICreateBee strategy = this.beeFactory.buildstrategy(this.randomSearchCreator, this);
+			strategy.setInitialState(sd);
+			strategy.setMainStrategy(this);
+			strategy.setSearchData(sd);
+			strategy.setStopCond(patchSize2);
+			sd.setStrategy(strategy);
+			sd.setHasChild(false);
+			sd.setParentTrajectory(new TrajectoryInfo(this.rootState, this.rootTrajectory));
+			sd.setHasParent(false);
+			sd.setParentfitness(null);
+			sd.setRadiusSize(patchSize2);
+
 			return addToSearchablePatches(sd);
 		}
 
 		return false;
+
 	}
 
 	// add an element to the seach
@@ -453,38 +425,41 @@ public class BeeStrategy3 implements IStrategy {
 	public synchronized void interruptStrategy() {
 		this.interrupted = true;
 		ExplorerThread me = null;
-		while(context.getGlobalContext().getThreadPool().getPoolSize()>1){
+		while (context.getGlobalContext().getThreadPool().getPoolSize() > 1) {
 			try {
-				ExplorerThread et = null; 
+				ExplorerThread et = null;
 				context.getGlobalContext().stopAllThreads();
-//				while ( et==null){
-//				
-//				//System.out.println(a.isEmpty());
-//				et = (ExplorerThread) context.getGlobalContext().getThreadPool().getQueue().peek();
-//				System.out.println(et);
-//				}
-//				if (context.getExplorerThread() != et) {
-//					System.out.println(context.getGlobalContext().getThreadPool().getPoolSize());
-//					System.out.println(et);
-//					et.stopRunning();
-//				} else {
-//					me = (ExplorerThread) context.getGlobalContext().getThreadPool().getQueue().poll();
-//				}
+				// while ( et==null){
+				//
+				// //System.out.println(a.isEmpty());
+				// et = (ExplorerThread)
+				// context.getGlobalContext().getThreadPool().getQueue().peek();
+				// System.out.println(et);
+				// }
+				// if (context.getExplorerThread() != et) {
+				// System.out.println(context.getGlobalContext().getThreadPool().getPoolSize());
+				// System.out.println(et);
+				// et.stopRunning();
+				// } else {
+				// me = (ExplorerThread)
+				// context.getGlobalContext().getThreadPool().getQueue().poll();
+				// }
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		if (me!=null) context.getGlobalContext().getThreadPool().getQueue().add(me);
+		if (me != null)
+			context.getGlobalContext().getThreadPool().getQueue().add(me);
 
 	}
 
 	// ---------------getters and setters --------------------
 
-	public ArrayList<Patch> getPatches() {
+	public ArrayList<SearchData> getPatches() {
 		return patches;
 	}
 
-	public void setPatches(ArrayList<Patch> patches) {
+	public void setPatches(ArrayList<SearchData> patches) {
 		this.patches = patches;
 	}
 
@@ -520,7 +495,7 @@ public class BeeStrategy3 implements IStrategy {
 		this.interrupted = interrupted;
 	}
 
-	public ArrayList<Patch> getBestpatches() {
+	public ArrayList<SearchData> getBestpatches() {
 		return bestpatches;
 	}
 
@@ -593,25 +568,21 @@ public class BeeStrategy3 implements IStrategy {
 		this.numberOfMaxBees = numberOfMaxBees;
 	}
 
-	public ICreateBee getRandomBeeCreator() {
+	public StrategiesOfBeeStrategy getRandomBeeCreator() {
 		return randomSearchCreator;
 	}
 
-	public void setRandomBeeCreator(ICreateBee randomBeeCreator) {
+	public void setRandomBeeCreator(StrategiesOfBeeStrategy randomBeeCreator) {
 		this.randomSearchCreator = randomBeeCreator;
 	}
 
-	public ICreateBee getNeighbourBeeCreator() {
+	public StrategiesOfBeeStrategy getNeighbourBeeCreator() {
 		return localSearchCreator;
 	}
 
-	public void setNeighbourBeeCreator(ICreateBee neighbourBeeCreator) {
+	public void setNeighbourBeeCreator(StrategiesOfBeeStrategy neighbourBeeCreator) {
 		this.localSearchCreator = neighbourBeeCreator;
 	}
-
-
-
-
 
 	// this is the main method, it will do everything
 	private synchronized void exploreown() {

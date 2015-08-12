@@ -18,6 +18,6 @@ public class BeeStratexUtil {
   
   public BeeStratexUtil() {
     throw new Error("Unresolved compilation problems:"
-      + "\nThe constructor CreateBeeWithDFS(BeeStrategy3, SearchData, HashSet<IState>) is not visible");
+      + "\nThe constructor CreateBeeWithDFS(BeeStrategy3) is not visible");
   }
 }

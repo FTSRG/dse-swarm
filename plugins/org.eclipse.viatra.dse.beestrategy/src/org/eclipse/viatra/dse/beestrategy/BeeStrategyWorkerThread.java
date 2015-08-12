@@ -1,10 +1,13 @@
 package org.eclipse.viatra.dse.beestrategy;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.ThreadContext;
+import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 
 public class BeeStrategyWorkerThread implements IStrategy {
@@ -13,6 +16,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	private boolean interrupted = false;
 	protected volatile ConcurrentLinkedQueue<SearchData> searchablePatches;
 	public volatile ConcurrentLinkedQueue<SearchData> instancesToBeChecked;
+	private BeeStrategy3 bs;
 
 	public void setConcurrentCollections(ConcurrentLinkedQueue<SearchData> searchablePatches,
 			ConcurrentLinkedQueue<SearchData> instancesToBeChecked) {
@@ -29,68 +33,53 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	@Override
 	public void explore() {
 		SearchData entry = null;
-		try{
-		while (!interrupted) {
-			while (searchablePatches == null) {
-				throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
-			}
-			if (searchablePatches.size() == 0) {
-				waitfunction();
-			} else {
-				//collect a searchData from searchablePatches
-				entry = getNewSearch();
-				while(entry==null){
+		try {
+			while (!interrupted) {
+				while (searchablePatches == null) {
+					throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
+				}
+				if (searchablePatches.size() == 0) {
+					waitfunction();
+				} else {
+					// collect a searchData from searchablePatches
 					entry = getNewSearch();
-				}
-				//get the strategy, which will be runned
-				IStrategy is = entry.getStrategy();
-				//get the place of the patch, and go there (set context to the right place)
-				is.initStrategy(context);
-				while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
-					context.getDesignSpaceManager().undoLastTransformation();
-				}
-				List<ITransition> transitions = entry.getActualState().getFullTransitionTrajectory();
-				for (ITransition transition : transitions) {
-					context.getDesignSpaceManager().fireActivation(transition);
-				}
-				logger.debug("search from: "+context.getDesignSpaceManager().getTrajectoryInfo());
-				//if it is a neighbourhoodbee, than run a neighbourhoodBee from the patch
-				if (entry.getHasParent() == true) {
-					StupidBee sb = entry.getStrategy().createNeighbourBee();
-					sb.setInitialState(entry.getPatch().getPatch());
-					entry.setStupidBee(sb);
-					setNewSearchData(entry);
-					logger.debug("arrived to: "+context.getDesignSpaceManager().getTrajectoryInfo());
-				}
-				//if it is a patch, than create a patch, with randomBee 
-				else {
-					entry.getStrategy().setStopCond(entry.getPatchsize());
-					Patch p = entry.getStrategy().createRandomBee();
-					//if it is null, than we have to stop, sooner or later check it on the other side (when we take it out of the list), if it is false, than don't put it into the list
-					if (p == null){
-						p = new Patch();
-						p.initPatch(null, context);
+					while (entry == null) {
+						entry = getNewSearch();
 					}
-					else{
-					//if it is the current start pos, than we could not find a proper solution
-						while (p.getBestBee().getInitialState().getCurrentState().toString().equals(entry.getPatch().getPatch().getCurrentState().toString())){
-							entry.getStrategy().setStopCond(entry.getPatchsize());
-							p = entry.getStrategy().createRandomBee();
-							if (p == null){
-								p = new Patch();
-								p.initPatch(null, context);
-								break;
-							}
-						}
+					// get the strategy, which will be runned
+					IStrategy is = entry.getStrategy();
+					// get the place of the patch, and go there (set context to
+					// the right place)
+					is.initStrategy(context);
+					while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
+						context.getDesignSpaceManager().undoLastTransformation();
 					}
-					entry.setPatch(p);
-					setNewSearchData(entry);
-					logger.debug("start patch at: "+context.getDesignSpaceManager().getTrajectoryInfo());
+					HashSet<IState> initialTrajectory = new HashSet<IState>();
+					initialTrajectory.add(context.getDesignSpaceManager().getCurrentState());
+					List<ITransition> transitions = entry.getParentTrajectory().getFullTransitionTrajectory();
+					for (ITransition transition : transitions) {
+						context.getDesignSpaceManager().fireActivation(transition);
+						initialTrajectory.add(context.getDesignSpaceManager().getCurrentState());
+					}
+					logger.debug("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
+					// if it is a neighbourhoodbee, than run a neighbourhoodBee
+					// from the patch
+					
+					entry.getStrategy().setStatesInTrajectory(initialTrajectory);
+					entry.getStrategy().setSearchData(entry);
+					SearchData sd = entry.getStrategy().createBee();
+					if (sd == null) {
+						sd = new SearchData();
+						sd.setParentTrajectory(null);
+					}
+					setNewSearchData(sd);
+					logger.debug("arrived to: " + context.getDesignSpaceManager().getTrajectoryInfo());
+					
 				}
 
 			}
-		}
-		}catch(Exception e){
+
+		} catch (Exception e) {
 			System.out.println(entry.getStrategy().toString());
 			e.printStackTrace();
 		}
@@ -99,8 +88,8 @@ public class BeeStrategyWorkerThread implements IStrategy {
 
 	private synchronized void waitfunction() throws InterruptedException {
 		this.notifyAll();
-		//this.wait(5000);
-		
+		// this.wait(5000);
+
 	}
 
 	private synchronized SearchData getNewSearch() {
@@ -120,7 +109,8 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				return false;
 			}
 		}
-		//this.notifyAll();
+		//bs.increasenumberOfActiveBees();
+		// this.notifyAll();
 		return true;
 	}
 
