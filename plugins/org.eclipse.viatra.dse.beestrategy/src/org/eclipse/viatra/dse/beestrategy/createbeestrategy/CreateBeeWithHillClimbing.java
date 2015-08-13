@@ -1,25 +1,18 @@
 package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.api.DSEException;
-import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
-import org.eclipse.viatra.dse.beestrategy.Patch;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
-import org.eclipse.viatra.dse.beestrategy.StupidBee;
-import org.eclipse.viatra.dse.beestrategy.StupidBee.BeeType;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
-import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.IState.TraversalStateType;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
-import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
@@ -57,8 +50,8 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 		@Override
 		public void setSearchData(SearchData sd){
 			this.searchData = sd;
-			radius = sd.getRadiusSize();
-			patchSize = radius;
+			this.stopCond= sd.getStopCond();
+			patchSize = (Integer)this.stopCond;
 		}
 		
 		
@@ -218,14 +211,11 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 
 
 
-		@Override
-		public void setStopCond(Object stopcond) {
-			this.patchSize = (Integer) stopcond;
+		
+		public void setpatchSize() {
+			this.patchSize = (Integer)this.searchData.getStopCond();
 			
 		}
-
-
-	
 
 
 		@Override
@@ -299,10 +289,58 @@ public class CreateBeeWithHillClimbing extends WorkerBeeStrategy{
 		        return null;
 		}
 
+
+
+		
+
+
+	
+
+
 		@Override
-		public void setInitialState(SearchData sd) {
-			// TODO Auto-generated method stub
+		public void explore() {
+			
+			System.out.println(this.getClass().getName()+".createBee");
+			if (this.searchData == null || this.searchData.getActualState() == null
+					|| this.searchData.getStopCond() == null ) {
+				return;
+			}
+	
+			boolean start = true;
+			Integer deepness = 0;
+	
+			Integer radius = (int) searchData.getStopCond();
+			// step patchsize many steps
+			int originalpatchSize = (int)this.searchData.getStopCond();
+			for (int i = 0; i < originalpatchSize; i++) {
+			
+					ITransition nextTran = this.selectNextTransition();
+					while (nextTran == null && deepness >= 0) {
+						dsm.undoLastTransformation();
+						deepness--;
+						nextTran = this.selectNextTransition();
+					}
+					if (deepness == 0 && start == false) {
+						this.searchData.setParentTrajectory(null);
+						return;
+					}
+					start = false;
+					dsm.fireActivation(nextTran);
+					if(isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
+						dsm.undoLastTransformation();
+						deepness--;
+					}
+					deepness++;
+			
+			}
+			this.searchData.setActualState(context.getDesignSpaceManager().getTrajectoryInfo());
+			this.searchData.setOwnfitness(context.calculateFitness());
+			TrajectoryFitness tf = new TrajectoryFitness(searchData.getActualState(), context.getLastFitness());
+			this.searchData.setOwntrajectoryFitness(tf);
 			
 		}
+
+
+		
 
 }

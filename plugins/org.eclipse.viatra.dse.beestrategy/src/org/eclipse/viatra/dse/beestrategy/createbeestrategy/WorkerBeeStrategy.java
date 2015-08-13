@@ -24,13 +24,17 @@ public abstract class WorkerBeeStrategy implements ICreateBee {
 	protected ThreadContext context;
 	protected DesignSpaceManager dsm;
 
-	protected Integer radius;
+	protected Object stopCond;
 	protected boolean interrupted;
+	
+	@Override
+	public SearchData returnResult() {
+		return this.searchData;
+	}
 
 	@Override
 	public void setSearchData(SearchData sd){
 		this.searchData = sd;
-		radius = sd.getRadiusSize();
 	}
 	
 	protected WorkerBeeStrategy(BeeStrategy3 bs) {
@@ -49,69 +53,62 @@ public abstract class WorkerBeeStrategy implements ICreateBee {
 
 	}
 
-	@Override
-	public void explore() {
-		if (this.searchData == null || this.searchData.getActualState() == null
-				|| this.searchData.getRadiusSize() == null || this.searchData.getRadiusSize() <= 0) {
-			this.bs.decreasenumberOfActiveBees();
-			return;
-		}
-		SearchData sd = createBee();
-		if (sd == null) {
-			this.bs.decreasenumberOfActiveBees();
-			return;
-		}
-		;
-
-	}
-
-	@Override
-	public SearchData createBee() {
-		if (this.searchData == null || this.searchData.getActualState() == null
-				|| this.searchData.getRadiusSize() == null || this.searchData.getRadiusSize() <= 0) {
-			this.bs.decreasenumberOfActiveBees();
-			return null;
-		}
-		SearchData sd = createBee();
-		if (sd == null) {
-			this.bs.decreasenumberOfActiveBees();
-			return null;
-		}
-		;
-
-		boolean start = true;
-		Integer deepness = 0;
-
-		radius = searchData.getRadiusSize();
-		// step patchsize many steps
-		int originalpatchSize = radius;
-		for (int i = 0; i < originalpatchSize; i++) {
-		
-				ITransition nextTran = this.selectNextTransition();
-				while (nextTran == null && deepness >= 0) {
-					dsm.undoLastTransformation();
-					deepness--;
-					nextTran = this.selectNextTransition();
-				}
-				if (deepness == 0 && start == false) {
-					return null;
-				}
-				start = false;
-				dsm.fireActivation(nextTran);
-				if(isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
-					dsm.undoLastTransformation();
-					deepness--;
-				}
-				deepness++;
-		
-		}
-		this.searchData.setActualState(context.getDesignSpaceManager().getTrajectoryInfo());
-		this.searchData.setOwnfitness(context.calculateFitness());
-		TrajectoryFitness tf = new TrajectoryFitness(searchData.getActualState(), context.getLastFitness());
-		this.searchData.setOwntrajectoryFitness(tf);
-		return searchData;
-
-	}
+//	@Override
+//	public void explore() {
+//		if (this.searchData == null || this.searchData.getActualState() == null
+//				|| this.searchData.getRadiusSize() == null || this.searchData.getRadiusSize() <= 0) {
+//			this.bs.decreasenumberOfActiveBees();
+//			return;
+//		}
+//		SearchData sd = createBee();
+//		if (sd == null) {
+//			this.bs.decreasenumberOfActiveBees();
+//			return;
+//		}
+//
+//	}
+//
+//	@Override
+//	public SearchData createBee() {
+//		System.out.println(this.getClass().getName()+".createBee");
+//		if (this.searchData == null || this.searchData.getActualState() == null
+//				|| this.searchData.getRadiusSize() == null || this.searchData.getRadiusSize() <= 0) {
+//			return null;
+//		}
+//
+//		boolean start = true;
+//		Integer deepness = 0;
+//
+//		radius = searchData.getRadiusSize();
+//		// step patchsize many steps
+//		int originalpatchSize = radius;
+//		for (int i = 0; i < originalpatchSize; i++) {
+//		
+//				ITransition nextTran = this.selectNextTransition();
+//				while (nextTran == null && deepness >= 0) {
+//					dsm.undoLastTransformation();
+//					deepness--;
+//					nextTran = this.selectNextTransition();
+//				}
+//				if (deepness == 0 && start == false) {
+//					return null;
+//				}
+//				start = false;
+//				dsm.fireActivation(nextTran);
+//				if(isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
+//					dsm.undoLastTransformation();
+//					deepness--;
+//				}
+//				deepness++;
+//		
+//		}
+//		this.searchData.setActualState(context.getDesignSpaceManager().getTrajectoryInfo());
+//		this.searchData.setOwnfitness(context.calculateFitness());
+//		TrajectoryFitness tf = new TrajectoryFitness(searchData.getActualState(), context.getLastFitness());
+//		this.searchData.setOwntrajectoryFitness(tf);
+//		return searchData;
+//
+//	}
 
 	public boolean isAlreadyFoundInThisTrajectory(IState currentState) {
 		if (this.statesInTrajectory.add(currentState))

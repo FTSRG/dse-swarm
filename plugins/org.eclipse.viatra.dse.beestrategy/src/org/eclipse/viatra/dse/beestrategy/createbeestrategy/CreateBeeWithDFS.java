@@ -34,8 +34,6 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
 		this.context = context;
-		if (radius == null)
-			radius = 1;
 		this.dsm = context.getDesignSpaceManager();
 		logger.debug("Initied");
 
@@ -101,27 +99,41 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 	// bs.setNumberOfActiveBees(NumberOfActiveBees++);
 
 	@Override
-	public synchronized SearchData createBee() {
-		while (radius > 0) {
+	public synchronized void explore() {
+		while (!shouldStop()) {
 			ITransition nextTran = selectNextTransition();
  			while (nextTran == null && dsm.getTrajectoryFromRoot().size() > 0) {
 				dsm.undoLastTransformation();
 				nextTran = selectNextTransition();
 			}
-			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0) return null;
+			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0){
+				this.searchData=null;
+				return;
+			}
 
 			dsm.fireActivation(nextTran);
 			if (this.isAlreadyFoundInThisTrajectory(dsm.getCurrentState()))
 				dsm.undoLastTransformation();
-			radius--;
+			fireTransitionHappend();
 		}
 		searchData.setActualState(dsm.getTrajectoryInfo());
 		searchData.setOwnfitness(context.calculateFitness());
 		TrajectoryFitness tf = new TrajectoryFitness(searchData.getActualState(), context.getLastFitness());
 		searchData.setOwntrajectoryFitness(tf);
-		return searchData;
+		
 	}
 
+	private void fireTransitionHappend() {
+	Integer stop = (Integer) this.searchData.getStopCond()-1;
+	this.searchData.setStopCond(stop);	
+	
+}
+	
+	private boolean shouldStop() {
+		Integer stopCond = (Integer) this.searchData.getStopCond();
+		if(stopCond<1) return true;
+	return false;
+}
 	@Override
 	public synchronized ITransition selectNextTransition() {
 		// if there is a state from here, which were not processed
@@ -215,20 +227,9 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 		this.bs = beeStrategy;
 
 	}
-
 	
-
-
 	
-	@Override
-	public void setInitialState(SearchData sd) {
-		
-	}
-	@Override
-	public void setStopCond(Object stopcond) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 
 }

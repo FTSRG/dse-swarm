@@ -3,12 +3,12 @@ package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 
-public class BeeStrategyFactory {
-	public enum StrategiesOfBeeStrategy {
+public class MiniStrategyFactory {
+	public enum StrategyType {
 		DFS, HillClimbing, BFS
 	}
 	
-	public ICreateBee buildstrategy(StrategiesOfBeeStrategy strategy, BeeStrategy3 bs) {
+	public ICreateBee buildstrategy(StrategyType strategy, BeeStrategy3 bs) {
 		if (strategy == null) {
 			return null;
 		}

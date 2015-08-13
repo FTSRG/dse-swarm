@@ -12,11 +12,8 @@ public interface ICreateBee extends IStrategy{
 
 
 
-	public SearchData createBee();
-	public void setInitialState(SearchData sd);
-	public void setStopCond(Object stopcond);
 	public void setMainStrategy(IStrategy beeStrategy);
 	public void setStatesInTrajectory(HashSet<IState> states);
 	public void setSearchData(SearchData sd);
-	
+	public SearchData returnResult();
 }

@@ -18,7 +18,15 @@ public class SearchData {
 
 	private TrajectoryFitness owntrajectoryFitness;
 	private ICreateBee strategy;
-	private Integer radius;
+	private Object stopCond;
+
+	public Object getStopCond() {
+		return stopCond;
+	}
+
+	public void setStopCond(Object stopCond) {
+		this.stopCond = stopCond;
+	}
 
 	public ICreateBee getStrategy() {
 		return strategy;
@@ -44,13 +52,7 @@ public class SearchData {
 		this.owntrajectoryFitness = owntrajectoryFitness;
 	}
 
-	public Integer getRadiusSize() {
-		return radius;
-	}
 
-	public void setRadiusSize(Integer radius) {
-		this.radius = radius;
-	}
 
 	public Boolean getHasParent() {
 		return hasParent;

@@ -1,9 +1,9 @@
 package org.eclipse.viatra.dse.beestrategy;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.ThreadContext;
@@ -11,12 +11,11 @@ import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 
 public class BeeStrategyWorkerThread implements IStrategy {
-	private Logger logger = Logger.getLogger(getClass());
+	private Logger logger = Logger.getLogger(BeeStrategyWorkerThread.class);
 	protected ThreadContext context;
 	private boolean interrupted = false;
 	protected volatile ConcurrentLinkedQueue<SearchData> searchablePatches;
 	public volatile ConcurrentLinkedQueue<SearchData> instancesToBeChecked;
-	private BeeStrategy3 bs;
 
 	public void setConcurrentCollections(ConcurrentLinkedQueue<SearchData> searchablePatches,
 			ConcurrentLinkedQueue<SearchData> instancesToBeChecked) {
@@ -33,14 +32,24 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	@Override
 	public void explore() {
 		SearchData entry = null;
-		try {
 			while (!interrupted) {
 				while (searchablePatches == null) {
-					throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
+					try {
+						throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				if (searchablePatches.size() == 0) {
-					waitfunction();
+					try {
+						waitfunction();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} else {
+					logger.debug("get entry");
 					// collect a searchData from searchablePatches
 					entry = getNewSearch();
 					while (entry == null) {
@@ -54,40 +63,42 @@ public class BeeStrategyWorkerThread implements IStrategy {
 					while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
 						context.getDesignSpaceManager().undoLastTransformation();
 					}
-					HashSet<IState> initialTrajectory = new HashSet<IState>();
-					initialTrajectory.add(context.getDesignSpaceManager().getCurrentState());
+					HashSet<IState> reachedStatesInTrajectory = new HashSet<IState>();
+					reachedStatesInTrajectory.add(context.getDesignSpaceManager().getCurrentState());
 					List<ITransition> transitions = entry.getParentTrajectory().getFullTransitionTrajectory();
 					for (ITransition transition : transitions) {
 						context.getDesignSpaceManager().fireActivation(transition);
-						initialTrajectory.add(context.getDesignSpaceManager().getCurrentState());
+						reachedStatesInTrajectory.add(context.getDesignSpaceManager().getCurrentState());
 					}
 					logger.debug("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
 					// if it is a neighbourhoodbee, than run a neighbourhoodBee
 					// from the patch
 					
-					entry.getStrategy().setStatesInTrajectory(initialTrajectory);
+					entry.getStrategy().setStatesInTrajectory(reachedStatesInTrajectory);
 					entry.getStrategy().setSearchData(entry);
-					SearchData sd = entry.getStrategy().createBee();
+					entry.getStrategy().explore();
+					SearchData sd= entry.getStrategy().returnResult();
 					if (sd == null) {
 						sd = new SearchData();
 						sd.setParentTrajectory(null);
 					}
-					setNewSearchData(sd);
+					if(sd.getParentTrajectory()!=null)
+						logger.debug(sd.getActualState());
+					else
+						logger.debug("null");
+					while (!setNewSearchData(sd));
+					logger.debug("in");
+
 					logger.debug("arrived to: " + context.getDesignSpaceManager().getTrajectoryInfo());
 					
 				}
 
 			}
 
-		} catch (Exception e) {
-			System.out.println(entry.getStrategy().toString());
-			e.printStackTrace();
-		}
-
 	}
 
 	private synchronized void waitfunction() throws InterruptedException {
-		this.notifyAll();
+		//this.notifyAll();
 		// this.wait(5000);
 
 	}
@@ -109,7 +120,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				return false;
 			}
 		}
-		//bs.increasenumberOfActiveBees();
+		logger.debug("give back entry");
 		// this.notifyAll();
 		return true;
 	}
@@ -117,7 +128,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	@Override
 	public void interruptStrategy() {
 		this.interrupted = true;
-		System.out.println("stopped");
+		
 
 	}
 
