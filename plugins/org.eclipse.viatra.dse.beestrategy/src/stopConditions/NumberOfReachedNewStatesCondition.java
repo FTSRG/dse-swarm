@@ -5,36 +5,34 @@ import java.util.Collection;
 import org.eclipse.viatra.dse.designspace.api.IState;
 
 public class NumberOfReachedNewStatesCondition implements IStopCondition{
-	Integer NumberOfFiredTransitions;
-	Integer StopCond;
+	Integer numberOfFiredTransitions;
+	Integer maxNumberOfFiredTransitions;
 	@Override
+	
 	public Boolean isStopConditionReached() {
-		if(StopCond>NumberOfFiredTransitions) return false;
+		if(maxNumberOfFiredTransitions>numberOfFiredTransitions) return false;
 		return true;
 	}
-	@Override
-	public void setStopConditon(Object StopCondition) {
-		StopCond = (Integer) StopCondition;
-		NumberOfFiredTransitions = 0;
+	
+	public void setMaxNumberOfFiredTransitions(Integer StopCondition) {
+		maxNumberOfFiredTransitions =  StopCondition;
+		numberOfFiredTransitions = 0;
 		
 	}
 
 	@Override
 	public void newFireTransitionHappend(IState reachedState) {
-		this.NumberOfFiredTransitions++;
+		this.numberOfFiredTransitions++;
 		
 	}
 	@Override
 	public void stepBackHappend(IState stepedBackTo) {
-		this.NumberOfFiredTransitions--;
+		this.numberOfFiredTransitions--;
 	}
 	
 	
 	//--------------------------- unused methods ----------------------------------------
-	@Override
-	public void setStopConditon(Collection collectionOfStopConditions) {
-		
-	}
+
 
 
 	@Override
@@ -42,4 +40,13 @@ public class NumberOfReachedNewStatesCondition implements IStopCondition{
 		
 		
 	}
+
+	@Override
+	public IStopCondition createNew(Object StopCondition) {
+		
+		NumberOfReachedNewStatesCondition stopcondClass = new NumberOfReachedNewStatesCondition();
+		stopcondClass.setMaxNumberOfFiredTransitions(maxNumberOfFiredTransitions);
+		return stopcondClass;
+	}
+
 }

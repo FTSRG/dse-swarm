@@ -4,8 +4,10 @@ Bundle-Name: Beestrategy
 Bundle-SymbolicName: org.eclipse.viatra.dse.beestrategy
 Bundle-Version: 1.0.0.qualifier
 Export-Package: org.eclipse.viatra.dse.beestrategy,
- org.eclipse.viatra.dse.beestrategy.createbeestrategy
+ org.eclipse.viatra.dse.beestrategy.createbeestrategy,
+ strategySelectors
 Require-Bundle: org.eclipse.viatra.dse.base,
  org.eclipse.xtend.lib;bundle-version="2.8.3",
  org.eclipse.viatra.dse.designspace
-Import-Package: org.apache.log4j;version="1.2.15"
+Import-Package: org.apache.log4j;version="1.2.15",
+ org.eclipse.viatra.dse.monitor

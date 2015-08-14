@@ -5,26 +5,33 @@ import java.util.Collection;
 import org.eclipse.viatra.dse.designspace.api.IState;
 
 public class NumberOfFiredTransitionCondition implements IStopCondition{
-	Integer NumberOfFiredTransitions;
-	Integer StopCond;
+	Integer numberOfFiredTransitions;
+	Integer maxNumberOfFiredTransitons;
 	@Override
 	public Boolean isStopConditionReached() {
-		if(StopCond>NumberOfFiredTransitions) return false;
+		if(maxNumberOfFiredTransitons>numberOfFiredTransitions) return false;
 		return true;
 	}
-	@Override
-	public void setStopConditon(Object StopCondition) {
-		StopCond = (Integer) StopCondition;
-		NumberOfFiredTransitions = 0;
+
+	public void setMaxNumberOfFiredTransitions(Integer radius) {
+		radius = radius;
+		numberOfFiredTransitions = 0;
 		
 	}
 	
 	@Override
 	public void newFireTransitionHappend(IState reachedState) {
-		this.NumberOfFiredTransitions++;
+		this.numberOfFiredTransitions++;
 		
 	}
 	
+	@Override
+	public IStopCondition createNew(Object StopCondition) {
+		NumberOfFiredTransitionCondition stopcondClass = new NumberOfFiredTransitionCondition();
+		stopcondClass.setMaxNumberOfFiredTransitions(maxNumberOfFiredTransitons);
+		return stopcondClass;
+		
+	}
 	
 	// ----------------------------------- unused methods of the interface --------------------------------- 
 	@Override
@@ -38,10 +45,7 @@ public class NumberOfFiredTransitionCondition implements IStopCondition{
 		
 	}
 	
-	@Override
-	public void setStopConditon(Collection collectionOfStopConditions) {
-		
-	}
+
 	
 	
 }

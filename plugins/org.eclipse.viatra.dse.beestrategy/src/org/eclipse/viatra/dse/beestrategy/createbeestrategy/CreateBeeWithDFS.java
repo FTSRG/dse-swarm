@@ -7,12 +7,11 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
-import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
-public class CreateBeeWithDFS extends WorkerBeeStrategy {
+public class CreateBeeWithDFS extends AbstractMiniStrategy {
 
 	
 	FilterOptions fo = new FilterOptions().nothingIfCut().untraversedOnly();	
@@ -23,7 +22,7 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 	public boolean isInterrupted() {
 		return interrupted;
 	}
-	protected CreateBeeWithDFS(BeeStrategy3 bs){
+	public CreateBeeWithDFS(BeeStrategy3 bs){
 		super(bs);
 	}
 	
@@ -39,82 +38,27 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 
 	}
 
-	
-//	public boolean isAlreadyFoundInThisStrategy(IState iState){
-//		if(this.alreadyFoundStates==null){
-//			alreadyFoundStates = new HashSet<IState>();
-//			alreadyFoundStates.add(iState);
-//			return false;
-//		}
-//		 return alreadyFoundStates.add(iState);
-//		
-//	}
-
-//	public boolean newStateIsProcessed(boolean isAlreadyTraversed) {
-//		Fitness actualFitness = context.calculateFitness();
-//		IState currentState = dsm.getCurrentState();
-//
-//		// if (!isAlreadyTraversed) {
-//		// logger.debug("reached state" + currentState.getId() + "isAlreadyTrav:
-//		// " + isAlreadyTraversed);
-//		// ReachedStateData rsd = new ReachedStateData();
-//		// System.out.println(currentState.getId());
-//		// rsd.setBestfitness(10.0);
-//		// rsd.setBestti(dsm.getTrajectoryInfo());
-//		// rsd.setReachedBy(context);
-//		// bs.setNewStateValue(currentState, rsd);
-//		// }
-//		if (isAlreadyTraversed) {
-//			context.getDesignSpaceManager().undoLastTransformation();
-//		}
-//
-//		// if(bs.getifTravelsed(currentState)){
-//		// System.out.println("vissza");
-//		// context.getDesignSpaceManager().undoLastTransformation();
-//		// }
-//		return true;
-//	}
-
-	// createRandomBee-be mehetne talan maskepp implementalva
-	// ExplorerThread explorerThread =
-	// context.getGlobalContext().tryStartNewThread(context,
-	// context.getModelRoot(), true,
-	// Strategies.createDFSStrategy(patchSize2));
-	// ArrayList<String> reachedStates = new ArrayList<String>();
-
-	// x1: System.out.println("decision: " + dsm.getCurrentState());
-
-	// x2:
-	/*
-	 * if (!reachedStates.contains(dsm.getCurrentState().getId().toString() ) ||
-	 * dsm.getCurrentState().getId() == bs.getStartstate().getId()) {
-	 * patchSize--; ti.addStep(nextTran);
-	 * reachedStates.add(dsm.getCurrentState().getId().toString());
-	 * System.out.println("reached state: " + dsm.getCurrentState()); } else {
-	 * dsm.undoLastTransformation(); patchSize--; }
-	 */
-
-	// x3:
-	// bs.getPatches().add(p);
-	// bs.setNumberOfActiveBees(NumberOfActiveBees++);
-
 	@Override
 	public synchronized void explore() {
-		while (!shouldStop()) {
+		while (!searchData.stopCond.isStopConditionReached()) {
 			ITransition nextTran = selectNextTransition();
  			while (nextTran == null && dsm.getTrajectoryFromRoot().size() > 0) {
 				dsm.undoLastTransformation();
+				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
 				nextTran = selectNextTransition();
 			}
 			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0){
 				this.searchData=null;
 				return;
 			}
-
 			dsm.fireActivation(nextTran);
-			if (this.isAlreadyFoundInThisTrajectory(dsm.getCurrentState()))
+			logger.debug("state: "+ context.getDesignSpaceManager().getCurrentState());
+			searchData.stopCond.newFireTransitionHappend(dsm.getCurrentState());
+			if (this.isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
 				dsm.undoLastTransformation();
-			fireTransitionHappend();
+				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
+			}
+		
 		}
 		searchData.setActualState(dsm.getTrajectoryInfo());
 		searchData.setOwnfitness(context.calculateFitness());
@@ -123,17 +67,7 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 		
 	}
 
-	private void fireTransitionHappend() {
-	Integer stop = (Integer) this.searchData.getStopCond()-1;
-	this.searchData.setStopCond(stop);	
-	
-}
-	
-	private boolean shouldStop() {
-		Integer stopCond = (Integer) this.searchData.getStopCond();
-		if(stopCond<1) return true;
-	return false;
-}
+
 	@Override
 	public synchronized ITransition selectNextTransition() {
 		// if there is a state from here, which were not processed
@@ -154,6 +88,25 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 		return null;
 	}
 
+
+
+	// --------------- getters and setters --------------------
+
+
+
+
+
+	
+
+	public void setBs(BeeStrategy3 beeStrategy) {
+		this.bs = beeStrategy;
+
+	}
+	@Override
+	public IMiniStrategy createMiniStrategy(BeeStrategy3 bs){
+		return new CreateBeeWithDFS(bs);
+	}	
+	
 //	@Override
 //	public synchronized StupidBee createNeighbourBee() {
 //		boolean start = true;
@@ -182,53 +135,7 @@ public class CreateBeeWithDFS extends WorkerBeeStrategy {
 //		return generateStupidBee(actualState);
 //	}
 
-//	private synchronized StupidBee generateStupidBee(TrajectoryInfo actualState) {
-//		StupidBee sb = new StupidBee();
-//		sb.init(actualState, BeeType.Neighbour, context.calculateFitness());
-//		TrajectoryFitness tf = new TrajectoryFitness(actualState, context.getLastFitness());
-//		sb.setTrajectoryFitness(tf);
-//		// patch.getBeeList().add(sb);
-//		// this.numberOfActiveBees++;
-//		// TODO szinkronizálni!!!!!!!!!!
-//		this.patch.getBeeList().add(sb);
-//		this.bs.increasenumberOfActiveBees();
-//		this.sb = sb;
-//		// System.out.println("hali");
-//		//TODO
-//		//System.out.println(sb.getActualState().getCurrentState().getId());
-//		this.interruptStrategy();
-//		return sb;
-//
-//	}
 
-//	private void setThreadContextTo(TrajectoryInfo patch) {
-//		DesignSpaceManager dsm = context.getDesignSpaceManager();
-//		while (dsm.getTrajectoryFromRoot().size() != 0) {
-//			dsm.undoLastTransformation();
-//		}
-//		List<ITransition> transitions = patch.getFullTransitionTrajectory();
-//		for (ITransition iTransition : transitions) {
-//			System.out.print(" allapot " + dsm.getCurrentState().getId() + " ");
-//			dsm.fireActivation(iTransition);
-//			System.out.println(iTransition.getId() + " " + dsm.getCurrentState().getId());
-//		}
-
-//	}
-
-	// --------------- getters and setters --------------------
-
-
-
-
-
-	
-
-	public void setBs(BeeStrategy3 beeStrategy) {
-		this.bs = beeStrategy;
-
-	}
-	
-	
 	
 
 

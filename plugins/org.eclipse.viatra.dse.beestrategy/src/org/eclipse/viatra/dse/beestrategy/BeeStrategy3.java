@@ -12,9 +12,7 @@ import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ExplorerThread;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.MiniStrategyFactory;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.MiniStrategyFactory.StrategyType;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
@@ -22,15 +20,15 @@ import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore.StopExecutionType;
 
+import stopConditions.IStopCondition;
+import stopConditions.NumberOfFiredTransitionCondition;
+import strategySelectors.IStrategySelector;
+import strategySelectors.SearchContext;
+
 public class BeeStrategy3 implements IStrategy {
 	public BeeStrategy3() {
 
 	};
-
-	public BeeStrategy3(StrategyType randomBeeCreator, StrategyType neighbourBeeCreator) {
-		this.randomSearchCreator = randomBeeCreator;
-		this.localSearchCreator = neighbourBeeCreator;
-	}
 
 	private ArrayList<ExplorerThread> workerThreads = new ArrayList<ExplorerThread>();
 	private ArrayList<SearchData> patches;
@@ -48,7 +46,18 @@ public class BeeStrategy3 implements IStrategy {
 	private Integer sitesnum = 3;
 	private int eliteSitesNum = 1;
 	private Integer bestSitesNum = 3;
+	private IStopCondition miniStrategyStopCondition;
+	private IStrategySelector strategySelector;
+	private SearchContext searchContext;
 	
+	public IStrategySelector getStrategySelector() {
+		return strategySelector;
+	}
+
+	public void setStrategySelector(IStrategySelector strategySelector) {
+		this.strategySelector = strategySelector;
+	}
+
 	private Logger logger = Logger.getLogger(BeeStrategy3.class);
 	
 
@@ -64,37 +73,41 @@ public class BeeStrategy3 implements IStrategy {
 	private Integer otherBeesNum = 1;
 
 	private Integer radiusOfRandomSearch = 4;
-	private Integer radiusOfPatch = 4;
 	private volatile int numberOfActiveBees = 0;
 	private int numberOfMaxBees = 3;
-	protected StrategyType randomSearchCreator;
-	protected StrategyType localSearchCreator;
+//	protected IMiniStrategy randomSearchCreator;
+//	protected IMiniStrategy localSearchCreator;
 	private int iterations = 1;
-	protected MiniStrategyFactory beeFactory = new MiniStrategyFactory();
 
 	private IState rootState;
 	private TrajectoryInfo rootTrajectory;
 
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
+	
+		this.patches = new ArrayList<SearchData>();
+		this.context = context;
+		this.dsm = context.getDesignSpaceManager();
+		this.solutionStore = context.getGlobalContext().getSolutionStore();
+		
+	}
+
+	@Override
+	public void explore() {
 		if ((numberOfMaxBees
 				- (this.eliteSitesNum * (eliteBeesNum - otherBeesNum) + this.bestSitesNum * otherBeesNum)) < 1) {
 			throw new DSEException(
 					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
 		}
-		this.patches = new ArrayList<SearchData>();
-		this.context = context;
-		this.dsm = context.getDesignSpaceManager();
-		this.solutionStore = context.getGlobalContext().getSolutionStore();
-	}
-
-	@Override
-	public void explore() {
+		if(this.strategySelector == null){
+			throw new DSEException("StrategySelector is undefind, it can be set with Strategy.setStrategySelector");
+		}
+		this.miniStrategyStopCondition = new  NumberOfFiredTransitionCondition();
 		SearchData sd = new SearchData();
 		sd.setHasParent(false);
 		sd.setHasChild(false);
 		sd.setParentTrajectory(context.getDesignSpaceManager().getTrajectoryInfo());
-		sd.setActualState(dsm.getTrajectoryInfo());
+		sd.setActualState(dsm.getTrajectoryInfo().clone());
 		sd.setOwnfitness(context.calculateFitness());
 		sd.setOwntrajectoryFitness(new TrajectoryFitness(sd.getActualState(), context.getLastFitness()));
 		isSolution(sd);
@@ -143,7 +156,8 @@ public class BeeStrategy3 implements IStrategy {
 		// here we create random pathces in the exploration space with the help
 		// of the workerthreads
 		for (int i = 0; i < numberOfMaxBees; i++) {
-			if (!this.createRandomBee(radiusOfRandomSearch * iterations)) {
+			IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch * iterations);
+			if (!this.createRandomBee(cond)) {
 				System.out.println("exploreown2 :(");
 				return;
 			}
@@ -180,7 +194,8 @@ public class BeeStrategy3 implements IStrategy {
 					RecruitedBeesNum = otherBeesNum;
 				for (int j = 0; j < RecruitedBeesNum; j++) {
 					try{
-						this.createNeighbourhoodBee(this.bestpatches.get(i), radiusOfRandomSearch);
+						IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch);
+						this.createNeighbourhoodBee(this.bestpatches.get(i), cond);
 					}
 					catch (Exception e){
 					logger.debug(e);
@@ -196,7 +211,8 @@ public class BeeStrategy3 implements IStrategy {
 			for (int i = 0; i < remainingBeesNum; i++) {
 				// the deepness of new patches should be as high as the other
 				// deepness
-				createRandomBee(radiusOfRandomSearch * iterations);
+				IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch * iterations);
+				createRandomBee(cond);
 			}
 			while (numberOfActiveBees >= 1) {
 				if (this.interrupted == true)
@@ -259,6 +275,9 @@ public class BeeStrategy3 implements IStrategy {
 				dsm.undoLastTransformation();
 			}
 			TrajectoryInfo ti = sd.getActualState();
+			for (ITransition tran : ti.getFullTransitionTrajectory()) {
+				logger.debug(tran);
+			}
 			for (ITransition tran : ti.getFullTransitionTrajectory()) {
 				dsm.fireActivation(tran);
 			}
@@ -348,19 +367,23 @@ public class BeeStrategy3 implements IStrategy {
 	 *            size of the trajectory of the neighbourbee
 	 * @return
 	 */
-	private boolean createNeighbourhoodBee(SearchData oldSearchData, Integer patchSize2) {
-		if (localSearchCreator != null && oldSearchData != null) {
+	private boolean createNeighbourhoodBee(SearchData oldSearchData, IStopCondition stopCond) {
+		if (oldSearchData != null) {
+			
 			SearchData sd = new SearchData();
-			ICreateBee strategy = this.beeFactory.buildstrategy(this.localSearchCreator, this);
-			strategy.setMainStrategy(this);
 			oldSearchData.setHasChild(true);
-			sd.setStrategy(strategy);
 			sd.setHasChild(false);
-
+			sd.setActualState(oldSearchData.getActualState());
 			sd.setParentTrajectory(oldSearchData.getActualState());
 			sd.setHasParent(true);
 			sd.setParentfitness(oldSearchData.getOwnfitness());
-			sd.setStopCond(patchSize2);
+			sd.stopCond =  stopCond;
+			
+			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
+
+			sd.setStrategy(strategy.createMiniStrategy(this));
+			strategy.setMainStrategy(this);
+
 
 			return addToSearchablePatches(sd);
 		}
@@ -396,23 +419,19 @@ public class BeeStrategy3 implements IStrategy {
 	 *            size of the trajectory of the randombee
 	 * @return
 	 */
-	private Boolean createRandomBee(Integer patchSize2) {
-
-		if (randomSearchCreator != null) {
-			SearchData sd = new SearchData();
-			ICreateBee strategy = this.beeFactory.buildstrategy(this.randomSearchCreator, this);
-			strategy.setMainStrategy(this);
-			sd.setStrategy(strategy);
+	private Boolean createRandomBee(IStopCondition stopCondition) {		
+			SearchData sd = new SearchData();		
+			sd.setActualState(new TrajectoryInfo(this.rootState, this.rootTrajectory));
 			sd.setHasChild(false);
 			sd.setParentTrajectory(new TrajectoryInfo(this.rootState, this.rootTrajectory));
 			sd.setHasParent(false);
 			sd.setParentfitness(null);
-			sd.setStopCond(patchSize2);
-
+			sd.stopCond = stopCondition;
+			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
+			sd.setStrategy(strategy.createMiniStrategy(this));
+			strategy.setMainStrategy(this);
+			sd.setStrategy(strategy);
 			return addToSearchablePatches(sd);
-		}
-
-		return false;
 
 	}
 
@@ -581,20 +600,8 @@ public class BeeStrategy3 implements IStrategy {
 		this.numberOfMaxBees = numberOfMaxBees;
 	}
 
-	public StrategyType getRandomBeeCreator() {
-		return randomSearchCreator;
-	}
+	
 
-	public void setRandomBeeCreator(StrategyType randomBeeCreator) {
-		this.randomSearchCreator = randomBeeCreator;
-	}
-
-	public StrategyType getNeighbourBeeCreator() {
-		return localSearchCreator;
-	}
-
-	public void setNeighbourBeeCreator(StrategyType neighbourBeeCreator) {
-		this.localSearchCreator = neighbourBeeCreator;
-	}
+	
 
 }

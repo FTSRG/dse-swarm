@@ -1,9 +1,11 @@
 package org.eclipse.viatra.dse.beestrategy;
 
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ICreateBee;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
+
+import stopConditions.IStopCondition;
 
 public class SearchData {
 	// is it random/neighbourBee
@@ -17,22 +19,14 @@ public class SearchData {
 	private Fitness ownfitness;
 
 	private TrajectoryFitness owntrajectoryFitness;
-	private ICreateBee strategy;
-	private Object stopCond;
+	private IMiniStrategy strategy;
+	public IStopCondition stopCond;
 
-	public Object getStopCond() {
-		return stopCond;
-	}
-
-	public void setStopCond(Object stopCond) {
-		this.stopCond = stopCond;
-	}
-
-	public ICreateBee getStrategy() {
+	public IMiniStrategy getStrategy() {
 		return strategy;
 	}
 
-	public void setStrategy(ICreateBee strategy) {
+	public void setStrategy(IMiniStrategy strategy) {
 		this.strategy = strategy;
 	}
 
@@ -71,7 +65,8 @@ public class SearchData {
 	}
 
 	public TrajectoryInfo getParentTrajectory() {
-		return parentTrajectory;
+		if(parentTrajectory == null) return null;
+		return parentTrajectory.clone();
 	}
 
 	public void setParentTrajectory(TrajectoryInfo parentTrajectory) {
@@ -82,7 +77,8 @@ public class SearchData {
 	}
 
 	public TrajectoryInfo getActualState() {
-		return actualState;
+		if(actualState == null) return null;
+		return actualState.clone();
 	}
 
 	public void setActualState(TrajectoryInfo actualState) {

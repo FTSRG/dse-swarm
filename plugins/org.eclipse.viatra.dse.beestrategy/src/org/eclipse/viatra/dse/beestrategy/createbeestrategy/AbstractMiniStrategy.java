@@ -15,7 +15,7 @@ import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
-public abstract class WorkerBeeStrategy implements ICreateBee {
+public abstract class AbstractMiniStrategy implements IMiniStrategy {
 
 	protected BeeStrategy3 bs;
 	protected SearchData searchData;
@@ -37,7 +37,7 @@ public abstract class WorkerBeeStrategy implements ICreateBee {
 		this.searchData = sd;
 	}
 	
-	protected WorkerBeeStrategy(BeeStrategy3 bs) {
+	protected AbstractMiniStrategy(BeeStrategy3 bs) {
 		this.bs = bs;
 	}
 
