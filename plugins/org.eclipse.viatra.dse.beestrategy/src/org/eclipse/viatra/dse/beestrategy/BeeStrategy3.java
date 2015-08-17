@@ -70,6 +70,14 @@ public class BeeStrategy3 implements IStrategy {
 	}
 
 	private Integer eliteBeesNum = 1;
+	public IStopCondition getMiniStrategyStopCondition() {
+		return miniStrategyStopCondition;
+	}
+
+	public void setMiniStrategyStopCondition(IStopCondition miniStrategyStopCondition) {
+		this.miniStrategyStopCondition = miniStrategyStopCondition;
+	}
+
 	private Integer otherBeesNum = 1;
 
 	private Integer radiusOfRandomSearch = 4;
@@ -80,6 +88,22 @@ public class BeeStrategy3 implements IStrategy {
 	private int iterations = 1;
 
 	private IState rootState;
+	public IState getRootState() {
+		return rootState;
+	}
+
+	public void setRootState(IState rootState) {
+		this.rootState = rootState;
+	}
+
+	public TrajectoryInfo getRootTrajectory() {
+		return rootTrajectory;
+	}
+
+	public void setRootTrajectory(TrajectoryInfo rootTrajectory) {
+		this.rootTrajectory = rootTrajectory;
+	}
+
 	private TrajectoryInfo rootTrajectory;
 
 	@Override
@@ -102,7 +126,6 @@ public class BeeStrategy3 implements IStrategy {
 		if(this.strategySelector == null){
 			throw new DSEException("StrategySelector is undefind, it can be set with Strategy.setStrategySelector");
 		}
-		this.miniStrategyStopCondition = new  NumberOfFiredTransitionCondition();
 		SearchData sd = new SearchData();
 		sd.setHasParent(false);
 		sd.setHasChild(false);
@@ -377,10 +400,8 @@ public class BeeStrategy3 implements IStrategy {
 			sd.setParentTrajectory(oldSearchData.getActualState());
 			sd.setHasParent(true);
 			sd.setParentfitness(oldSearchData.getOwnfitness());
-			sd.stopCond =  stopCond;
-			
-			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
-
+			sd.stopCond =  stopCond;			
+			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);			
 			sd.setStrategy(strategy.createMiniStrategy(this));
 			strategy.setMainStrategy(this);
 

@@ -2,23 +2,18 @@ package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.eclipse.viatra.dse.api.DSEException;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
-import org.eclipse.viatra.dse.designspace.api.IState.TraversalStateType;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
-import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 
 public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	enum HillClimbingStrategyState {
@@ -28,17 +23,17 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	private Collection<ITransition> besttransitions;
 	private DesignSpaceManager dsm;
 
-	private double percentOfOpenedStates = 0;
-	private boolean interrupted;
+	
+	
 	private HillClimbingStrategyState state = HillClimbingStrategyState.TRY_AND_SAVE;
 
-	private int triedTransitions = 0;
+	
 	private Fitness bestFitness = null;
-	private Random rnd = new Random();
+	
 
 	private ObjectiveComparatorHelper objectiveComparatorHelper;
 
-	private ISolutionStore solutionStore;
+	
 
 	private Logger logger = Logger.getLogger(getClass());
 
@@ -273,7 +268,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	// return null;
 	// }
 
-	@Override
+
 	ITransition selectNextTransition() {
 		ITransition bestTransition = null;
 		Collection<? extends ITransition> transitions = null;
@@ -290,6 +285,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 			System.out.println(transitions.toString());
 			while (it.hasNext()) {
 				ITransition actualTran = it.next();
+				System.out.println(actualTran + " from: "+ dsm.getCurrentState());
 				dsm.fireActivation(actualTran);
 				if (bestFitness == null) {
 					bestFitness = context.calculateFitness();

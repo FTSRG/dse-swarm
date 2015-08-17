@@ -116,7 +116,6 @@ public abstract class AbstractMiniStrategy implements IMiniStrategy {
 		return true;
 	}
 
-	abstract ITransition selectNextTransition();
 
 	public ThreadContext getContext() {
 		return context;

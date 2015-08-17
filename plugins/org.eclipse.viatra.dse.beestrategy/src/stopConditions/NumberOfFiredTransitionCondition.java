@@ -14,7 +14,7 @@ public class NumberOfFiredTransitionCondition implements IStopCondition{
 	}
 
 	public void setMaxNumberOfFiredTransitions(Integer radius) {
-		radius = radius;
+		this.maxNumberOfFiredTransitons = radius;
 		numberOfFiredTransitions = 0;
 		
 	}
@@ -28,7 +28,7 @@ public class NumberOfFiredTransitionCondition implements IStopCondition{
 	@Override
 	public IStopCondition createNew(Object StopCondition) {
 		NumberOfFiredTransitionCondition stopcondClass = new NumberOfFiredTransitionCondition();
-		stopcondClass.setMaxNumberOfFiredTransitions(maxNumberOfFiredTransitons);
+		stopcondClass.setMaxNumberOfFiredTransitions((Integer)StopCondition); 
 		return stopcondClass;
 		
 	}

@@ -68,8 +68,8 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 	}
 
 
-	@Override
-	public synchronized ITransition selectNextTransition() {
+
+	public ITransition selectNextTransition() {
 		// if there is a state from here, which were not processed
 		Integer actTranNum = dsm.getTransitionsFromCurrentState(fo).size();
 		if (actTranNum > 0) {
