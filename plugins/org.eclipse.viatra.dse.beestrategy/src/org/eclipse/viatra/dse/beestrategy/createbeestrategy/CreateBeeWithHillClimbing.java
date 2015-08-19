@@ -7,7 +7,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
@@ -48,7 +48,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 		this.searchData = sd;
 	}
 
-	public CreateBeeWithHillClimbing(BeeStrategy3 bs) {
+	public CreateBeeWithHillClimbing(StrategyCombiner bs) {
 		super(bs);
 	}
 	//
@@ -299,6 +299,9 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 				dsm.undoLastTransformation();
 			}
 			it = transitions.iterator();
+			if(context.getObjectiveComparatorHelper().compare(bestFitness, searchData.getParentfitness())==-1){
+				return null;
+			}
 			while (it.hasNext()) {
 				ITransition actualTran = it.next();
 				dsm.fireActivation(actualTran);
@@ -316,7 +319,6 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 		}
 		
 		bestTransition = besttransitions.iterator().next();
-		
 
 		System.out.println(bestTransition);
 		besttransitions.remove(bestTransition);
@@ -376,7 +378,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	}
 
 	@Override
-	public IMiniStrategy createMiniStrategy(BeeStrategy3 bs) {
+	public IMiniStrategy createMiniStrategy(StrategyCombiner bs) {
 		return new CreateBeeWithHillClimbing(bs);
 	}
 

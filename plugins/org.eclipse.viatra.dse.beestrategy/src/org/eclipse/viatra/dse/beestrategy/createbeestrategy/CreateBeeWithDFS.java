@@ -6,7 +6,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
@@ -22,7 +22,7 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 	public boolean isInterrupted() {
 		return interrupted;
 	}
-	public CreateBeeWithDFS(BeeStrategy3 bs){
+	public CreateBeeWithDFS(StrategyCombiner bs){
 		super(bs);
 	}
 	
@@ -98,12 +98,12 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 
 	
 
-	public void setBs(BeeStrategy3 beeStrategy) {
+	public void setBs(StrategyCombiner beeStrategy) {
 		this.bs = beeStrategy;
 
 	}
 	@Override
-	public IMiniStrategy createMiniStrategy(BeeStrategy3 bs){
+	public IMiniStrategy createMiniStrategy(StrategyCombiner bs){
 		return new CreateBeeWithDFS(bs);
 	}	
 	

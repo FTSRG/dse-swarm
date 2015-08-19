@@ -17,4 +17,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: org.apache.log4j,
  org.eclipse.viatra.dse.beestrategy,
- org.eclipse.viatra.dse.beestrategy.createbeestrategy
+ org.eclipse.viatra.dse.beestrategy.createbeestrategy,
+ org.eclipse.viatra.dse.stopConditions,
+ org.eclipse.viatra.dse.strategySelectors

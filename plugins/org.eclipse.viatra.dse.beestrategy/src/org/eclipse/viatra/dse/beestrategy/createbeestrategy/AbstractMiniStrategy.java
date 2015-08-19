@@ -5,7 +5,7 @@ import java.util.HashSet;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.Patch;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.StupidBee;
@@ -14,17 +14,16 @@ import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
+import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 
 public abstract class AbstractMiniStrategy implements IMiniStrategy {
 
-	protected BeeStrategy3 bs;
+	protected StrategyCombiner bs;
 	protected SearchData searchData;
 	protected HashSet<IState> statesInTrajectory = new HashSet<IState>();
 
 	protected ThreadContext context;
 	protected DesignSpaceManager dsm;
-
-	protected Object stopCond;
 	protected boolean interrupted;
 	
 	@Override
@@ -37,7 +36,7 @@ public abstract class AbstractMiniStrategy implements IMiniStrategy {
 		this.searchData = sd;
 	}
 	
-	protected AbstractMiniStrategy(BeeStrategy3 bs) {
+	protected AbstractMiniStrategy(StrategyCombiner bs) {
 		this.bs = bs;
 	}
 
@@ -133,7 +132,7 @@ public abstract class AbstractMiniStrategy implements IMiniStrategy {
 	
 	@Override
 	public void setMainStrategy(IStrategy beeStrategy) {
-		this.bs = (BeeStrategy3) beeStrategy;
+		this.bs = (StrategyCombiner) beeStrategy;
 
 	}
 	

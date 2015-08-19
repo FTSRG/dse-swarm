@@ -1,7 +1,8 @@
-package stopConditions;
+package org.eclipse.viatra.dse.stopConditions;
 
 import java.util.Collection;
 
+import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.designspace.api.IState;
 
 public class NumberOfReachedNewStatesCondition implements IStopCondition{
@@ -47,6 +48,11 @@ public class NumberOfReachedNewStatesCondition implements IStopCondition{
 		NumberOfReachedNewStatesCondition stopcondClass = new NumberOfReachedNewStatesCondition();
 		stopcondClass.setMaxNumberOfFiredTransitions(maxNumberOfFiredTransitions);
 		return stopcondClass;
+	}
+
+	@Override
+	public void setContext(ThreadContext context) {
+		
 	}
 
 }

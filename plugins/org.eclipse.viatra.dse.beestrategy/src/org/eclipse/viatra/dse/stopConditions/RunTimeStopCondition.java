@@ -1,8 +1,9 @@
-package stopConditions;
+package org.eclipse.viatra.dse.stopConditions;
 
 import java.sql.Time;
 import java.util.Collection;
 
+import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.designspace.api.IState;
 
 public class RunTimeStopCondition implements IStopCondition {
@@ -38,6 +39,12 @@ public class RunTimeStopCondition implements IStopCondition {
 	public IStopCondition createNew(Object StopCondition) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+
+
+	@Override
+	public void setContext(ThreadContext context) {
 	}
 
 

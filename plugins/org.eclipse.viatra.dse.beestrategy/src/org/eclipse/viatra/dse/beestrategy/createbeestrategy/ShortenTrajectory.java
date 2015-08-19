@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 import org.eclipse.viatra.dse.api.DSEException;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
@@ -12,12 +12,12 @@ import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
 public class ShortenTrajectory extends AbstractMiniStrategy{
 
-	public ShortenTrajectory(BeeStrategy3 bs) {
+	public ShortenTrajectory(StrategyCombiner bs) {
 		super(bs);
 	}
 
 	@Override
-	public IMiniStrategy createMiniStrategy(BeeStrategy3 bs) {
+	public IMiniStrategy createMiniStrategy(StrategyCombiner bs) {
 		return new ShortenTrajectory(bs);
 	}
 

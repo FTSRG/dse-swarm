@@ -7,15 +7,18 @@ import org.eclipse.incquery.runtime.exception.IncQueryException;
 import org.eclipse.viatra.dse.api.DSETransformationRule;
 import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
 import org.eclipse.viatra.dse.api.Solution;
-import org.eclipse.viatra.dse.api.Strategies;
 import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
 import org.eclipse.viatra.dse.api.strategy.impl.HillClimbingStrategy;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
 import org.eclipse.viatra.dse.objectives.ActivationFitnessProcessor;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
 import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
+import org.eclipse.viatra.dse.stopConditions.NumberOfFiredTransitionCondition;
+import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;
+import org.eclipse.viatra.dse.strategySelectors.RandomStrategySelector;
 
 import ServerPark.Machines;
 import ServerPark.ServerParkFactory;
@@ -39,10 +42,10 @@ public class SetUp {
 	 protected DSETransformationRule<?, ?> changeProcessLocation;
 	 protected DSETransformationRule<?, ?> startMachine;
 	 protected DSETransformationRule<?, ?> stopMachine;
-	 
+	 private IStrategySelector selector;
 	 FixedPriorityStrategy fps;
 	 HillClimbingStrategy hcs;
-	 BeeStrategy3 bs;
+	 StrategyCombiner bs;
 	 
 	 private final class CostOfStartComputer implements ActivationFitnessProcessor {
 	       
@@ -73,12 +76,16 @@ public class SetUp {
 	 }
 	
 	 
-	public void setUpProject() throws IncQueryException{
+	
+	public SetUp() {
+		// TODO Auto-generated constructor stub
+	}
+	public void setUpProject(String source) throws IncQueryException{
 		 factory = ServerParkFactory.eINSTANCE;
 		// model = factory.createUsedMachines();
 		 dse = new DesignSpaceExplorer();
 		
-		 model = new StartProblem().getModel();
+		 model = new StartProblem(source).getModel();
 		System.out.println( model.getAllMachines().get(0).getIP());
 		 dse.setInitialModel(model);
 		
@@ -132,7 +139,7 @@ public class SetUp {
 		    );
 		
 	
-		 dse.setMaxNumberOfThreads(3);
+		 dse.setMaxNumberOfThreads(2);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 
 		// hcs = new HillClimbingStrategy();
@@ -143,11 +150,13 @@ public class SetUp {
          .withRulePriority(this.startMachine, 4)
          .withRulePriority(this.stopMachine, 4).withDepthLimit(5);
 		 
-		bs = new BeeStrategy3(new CreateBeeWithDFS(),new CreateBeeWithDFS());
+		bs = new StrategyCombiner();
+		RandomStrategySelector selector = new RandomStrategySelector();
+		selector.setStrategies(new CreateBeeWithHillClimbing(bs), new CreateBeeWithDFS(bs));
+		bs.setStrategySelector(selector);
 		bs.setBestSitesNum(2);
 		bs.setEliteBeesNum(2);
 		bs.setEliteSitesNum(1);
-		bs.setNeighbourBeeCreator(new CreateBeeWithDFS());
 		try {
 			bs.setNumberOfMaxBees(4);
 		} catch (Exception e) {
@@ -157,12 +166,16 @@ public class SetUp {
 		bs.setOtherBeesNum(1);
 		bs.setPatchSize(1);
 		bs.setSitesnum(2);
+		NumberOfFiredTransitionCondition noft = new NumberOfFiredTransitionCondition();
+		noft.setMaxNumberOfFiredTransitions(1);
+		bs.setMiniStrategyStopCondition(noft);
+		
 		
 		 
 	}
 	public void startProject(){
-		dse.startExploration(Strategies.createDFSStrategy(5));
-//		dse.startExploration(bs);
+		//dse.startExploration(Strategies.createDFSStrategy(5));
+		dse.startExploration(bs);
 		//dse.startExploration(fps);
 //		 dse.setSolutionStore(new StrategyDependentSolutionStore());
 //	     dse.startExploration(new HillClimbingStrategy());
@@ -173,5 +186,6 @@ public class SetUp {
 		 Collection<Solution> solutions = dse.getSolutions();
 		 System.out.println(solutions.size());
 	}
+	
 }
 

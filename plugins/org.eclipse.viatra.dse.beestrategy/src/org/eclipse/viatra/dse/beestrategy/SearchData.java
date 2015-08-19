@@ -1,26 +1,25 @@
 package org.eclipse.viatra.dse.beestrategy;
 
+import java.util.ArrayList;
+
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
-
-import stopConditions.IStopCondition;
+import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 
 public class SearchData {
-	// is it random/neighbourBee
-	private Boolean hasParent;
-	// if it has Child than we should not use it
-	private Boolean hasChild;
-
-	private TrajectoryInfo parentTrajectory;
-	private TrajectoryInfo actualState;
-	private Fitness parentfitness;
-	private Fitness ownfitness;
-
-	private TrajectoryFitness owntrajectoryFitness;
 	private IMiniStrategy strategy;
 	public IStopCondition stopCond;
+	private ArrayList<SearchTrajectory> trajectories = new ArrayList<SearchTrajectory>();
+
+	public ArrayList<SearchTrajectory> getTrajectories() {
+		return trajectories;
+	}
+
+	public void setTrajectories(ArrayList<SearchTrajectory> trajectories) {
+		this.trajectories = trajectories;
+	}
 
 	public IMiniStrategy getStrategy() {
 		return strategy;
@@ -29,71 +28,114 @@ public class SearchData {
 	public void setStrategy(IMiniStrategy strategy) {
 		this.strategy = strategy;
 	}
-
+	
 	public Fitness getOwnfitness() {
-		return ownfitness;
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getOwnfitness();
 	}
 
 	public void setOwnfitness(Fitness ownfitness) {
-		this.ownfitness = ownfitness;
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		this.trajectories.get(0).setOwnfitness(ownfitness);
 	}
 
 	public TrajectoryFitness getOwntrajectoryFitness() {
-		return owntrajectoryFitness;
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return trajectories.get(0).getOwntrajectoryFitness();
 	}
 
 	public void setOwntrajectoryFitness(TrajectoryFitness owntrajectoryFitness) {
-		this.owntrajectoryFitness = owntrajectoryFitness;
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		this.trajectories.get(0).setOwntrajectoryFitness(owntrajectoryFitness);
 	}
 
 
 
 	public Boolean getHasParent() {
-		return hasParent;
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getHasParent();
 	}
 
 	public void setHasParent(Boolean hasParent) {
-		this.hasParent = hasParent;
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		this.trajectories.get(0).setHasParent(hasParent);
 	}
 
 	public Boolean getHasChild() {
-		return hasChild;
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getHasChild();
 	}
 
 	public void setHasChild(Boolean hasChild) {
-		this.hasChild = hasChild;
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		this.trajectories.get(0).setHasChild(hasChild);
 	}
 
 	public TrajectoryInfo getParentTrajectory() {
-		if(parentTrajectory == null) return null;
-		return parentTrajectory.clone();
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getParentTrajectory();
 	}
 
 	public void setParentTrajectory(TrajectoryInfo parentTrajectory) {
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		
 		if (parentTrajectory == null)
-			this.parentTrajectory = null;
+			this.trajectories.get(0).setParentTrajectory(null);
 		else
-			this.parentTrajectory = parentTrajectory.clone();
+			this.trajectories.get(0).setParentTrajectory(parentTrajectory);
 	}
 
 	public TrajectoryInfo getActualState() {
-		if(actualState == null) return null;
-		return actualState.clone();
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getActualState();
 	}
 
 	public void setActualState(TrajectoryInfo actualState) {
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}
+		
 		if (actualState == null)
-			this.actualState = null;
+			this.trajectories.get(0).setActualState(null);
 		else
-		this.actualState = actualState.clone();
+			this.trajectories.get(0).setActualState(actualState);
 	}
 
 	public Fitness getParentfitness() {
-		return parentfitness;
+		if(this.trajectories.size() == 0){
+			return null;
+		}
+		return this.trajectories.get(0).getParentfitness();
 	}
 
 	public void setParentfitness(Fitness parentfitness) {
-		this.parentfitness = parentfitness;
+		if(this.trajectories.size() == 0){
+			trajectories.add(new SearchTrajectory());
+		}	
+		this.trajectories.get(0).setParentfitness(parentfitness);		
 	}
 
+	
 }

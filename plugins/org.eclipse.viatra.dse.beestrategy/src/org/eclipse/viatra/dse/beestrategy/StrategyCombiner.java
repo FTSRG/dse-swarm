@@ -19,19 +19,20 @@ import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore.StopExecutionType;
+import org.eclipse.viatra.dse.stopConditions.IStopCondition;
+import org.eclipse.viatra.dse.stopConditions.NumberOfFiredTransitionCondition;
+import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;
+import org.eclipse.viatra.dse.strategySelectors.SearchContext;
 
-import stopConditions.IStopCondition;
-import stopConditions.NumberOfFiredTransitionCondition;
-import strategySelectors.IStrategySelector;
-import strategySelectors.SearchContext;
-
-public class BeeStrategy3 implements IStrategy {
-	public BeeStrategy3() {
+public class StrategyCombiner implements IStrategy {
+	public StrategyCombiner() {
 
 	};
 
 	private ArrayList<ExplorerThread> workerThreads = new ArrayList<ExplorerThread>();
-	private ArrayList<SearchData> patches;
+	
+
+	private ArrayList<SearchTrajectory> patches;
 
 	private Boolean alwaysnew = true;
 
@@ -41,7 +42,7 @@ public class BeeStrategy3 implements IStrategy {
 	private DesignSpaceManager dsm;
 	private ISolutionStore solutionStore;
 	private boolean interrupted = false;
-	private ArrayList<SearchData> bestpatches;
+	private ArrayList<SearchTrajectory> bestpatches;
 	private StopExecutionType set = StopExecutionType.CONTINUE;
 	private Integer sitesnum = 3;
 	private int eliteSitesNum = 1;
@@ -49,71 +50,34 @@ public class BeeStrategy3 implements IStrategy {
 	private IStopCondition miniStrategyStopCondition;
 	private IStrategySelector strategySelector;
 	private SearchContext searchContext;
-	
-	public IStrategySelector getStrategySelector() {
-		return strategySelector;
-	}
-
-	public void setStrategySelector(IStrategySelector strategySelector) {
-		this.strategySelector = strategySelector;
-	}
-
-	private Logger logger = Logger.getLogger(BeeStrategy3.class);
-	
-
-	public Integer getBestSitesNum() {
-		return bestSitesNum;
-	}
-
-	public void setBestSitesNum(Integer bestSitesNum) {
-		this.bestSitesNum = bestSitesNum;
-	}
-
 	private Integer eliteBeesNum = 1;
-	public IStopCondition getMiniStrategyStopCondition() {
-		return miniStrategyStopCondition;
-	}
+	
 
-	public void setMiniStrategyStopCondition(IStopCondition miniStrategyStopCondition) {
-		this.miniStrategyStopCondition = miniStrategyStopCondition;
-	}
+	private Logger logger = Logger.getLogger(StrategyCombiner.class);
+
+
 
 	private Integer otherBeesNum = 1;
 
 	private Integer radiusOfRandomSearch = 4;
 	private volatile int numberOfActiveBees = 0;
 	private int numberOfMaxBees = 3;
-//	protected IMiniStrategy randomSearchCreator;
-//	protected IMiniStrategy localSearchCreator;
+	// protected IMiniStrategy randomSearchCreator;
+	// protected IMiniStrategy localSearchCreator;
 	private int iterations = 1;
 
 	private IState rootState;
-	public IState getRootState() {
-		return rootState;
-	}
-
-	public void setRootState(IState rootState) {
-		this.rootState = rootState;
-	}
-
-	public TrajectoryInfo getRootTrajectory() {
-		return rootTrajectory;
-	}
-
-	public void setRootTrajectory(TrajectoryInfo rootTrajectory) {
-		this.rootTrajectory = rootTrajectory;
-	}
-
 	private TrajectoryInfo rootTrajectory;
 
+	
 	@Override
 	public synchronized void initStrategy(ThreadContext context) {
-	
-		this.patches = new ArrayList<SearchData>();
+
+		this.patches = new ArrayList<SearchTrajectory>();
 		this.context = context;
 		this.dsm = context.getDesignSpaceManager();
 		this.solutionStore = context.getGlobalContext().getSolutionStore();
-		
+
 	}
 
 	@Override
@@ -123,10 +87,10 @@ public class BeeStrategy3 implements IStrategy {
 			throw new DSEException(
 					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
 		}
-		if(this.strategySelector == null){
+		if (this.strategySelector == null) {
 			throw new DSEException("StrategySelector is undefind, it can be set with Strategy.setStrategySelector");
 		}
-		SearchData sd = new SearchData();
+		SearchTrajectory sd = new SearchTrajectory();
 		sd.setHasParent(false);
 		sd.setHasChild(false);
 		sd.setParentTrajectory(context.getDesignSpaceManager().getTrajectoryInfo());
@@ -174,76 +138,7 @@ public class BeeStrategy3 implements IStrategy {
 		// workerthreads ( DesignSpaceExplorer.setMaxNumberOfThreads(x))
 		startWorkerThreads();
 
-		// number of bestpatches is set at the creation of the strategy
-		this.bestpatches = new ArrayList<SearchData>();
-		// here we create random pathces in the exploration space with the help
-		// of the workerthreads
-		for (int i = 0; i < numberOfMaxBees; i++) {
-			IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch * iterations);
-			if (!this.createRandomBee(cond)) {
-				System.out.println("exploreown2 :(");
-				return;
-			}
-		}
-		// we wait till we get back the solution from workerthreads
-		while (numberOfActiveBees >= 1 && interrupted != true) {
-			getBackBees();
-		}
-		// collect the bests from patches (sitesnum can be set by the user at
-		// the beginning of the strategy), a better patch has a better best bee,
-		// the other bees does not count
-		if (interrupted == true)
-			return;
-		getBestPatches(sitesnum);
-		while (interrupted != true) {
-			iterations++;
-			System.out.println(interrupted);
-			// select best patches, a better patch has a better best bee, the
-			// other bees does not count
-			this.bestpatches = getBestPatches(sitesnum);
-
-			// create neighbourhoodbees from the best patches (elitepatches have
-			// more bees than others)
-			int length;
-			if (bestSitesNum < this.bestpatches.size())
-				length = bestSitesNum;
-			else
-				length = this.bestpatches.size();
-			for (int i = 0; i < length; i++) {
-				Integer RecruitedBeesNum = 0;
-				if (i < eliteSitesNum)
-					RecruitedBeesNum = eliteBeesNum;
-				else
-					RecruitedBeesNum = otherBeesNum;
-				for (int j = 0; j < RecruitedBeesNum; j++) {
-					try{
-						IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch);
-						this.createNeighbourhoodBee(this.bestpatches.get(i), cond);
-					}
-					catch (Exception e){
-					logger.debug(e);
-					String s = bestpatches + " "+ bestpatches.size()+ " "+ radiusOfRandomSearch+ " "+length + " "+ RecruitedBeesNum+ " "+i;
-					logger.debug(s);
-					}
-					bestpatches.get(i).setHasChild(true);
-				}
-			}
-
-			// remaingingBeesNum must be bigger than 0
-			Integer remainingBeesNum = numberOfMaxBees - numberOfActiveBees;
-			for (int i = 0; i < remainingBeesNum; i++) {
-				// the deepness of new patches should be as high as the other
-				// deepness
-				IStopCondition cond = this.miniStrategyStopCondition.createNew(radiusOfRandomSearch * iterations);
-				createRandomBee(cond);
-			}
-			while (numberOfActiveBees >= 1) {
-				if (this.interrupted == true)
-					return;
-				getBackBees();
-			}
-
-		}
+		
 	}
 
 	/**
@@ -252,30 +147,34 @@ public class BeeStrategy3 implements IStrategy {
 	 * it will be put into the patch list, if it is a stupidBee than it will be
 	 * put into the patch where it belongs
 	 */
-	private void getBackBees() {
+	public void getBackBees() {
 		SearchData sd = getFromConcurrentList();
 		if (sd != null) {
-
 			this.decreasenumberOfActiveBees();
-			if (sd.getParentTrajectory() == null)
-				return;
-			if (sd.getOwnfitness() == null)
-				return;
-			sd.setHasChild(false);
-			isSolution(sd);
-			if (this.interrupted == true)
-				return;
-			Boolean contained = false;
-			for (int i = 0; i < this.patches.size(); i++) {
-				if (patches.get(i).getActualState().equals(sd.getActualState())) {
-					contained = true;
+			if (sd.getTrajectories() != null) {
+				for (int j = 0; j < sd.getTrajectories().size(); j++) {
+					if (sd.getTrajectories().get(j).getParentTrajectory() == null)
+						return;
+					if (sd.getTrajectories().get(j).getOwnfitness() == null)
+						return;
+					sd.getTrajectories().get(j).setHasChild(false);
+					isSolution(sd.getTrajectories().get(j));
+					if (this.interrupted == true)
+						return;
+					Boolean contained = false;
+					for (int i = 0; i < this.patches.size(); i++) {
+						if (patches.get(i).getActualState().equals(sd.getTrajectories().get(j).getActualState())) {
+							contained = true;
+						}
+					}
+					if (contained == false)
+						patches.add(sd.getTrajectories().get(j));
 				}
-			}
-			if (contained == false)
-				patches.add(sd);
 
-		} else {
-			wakeThreads();
+			} else {
+				wakeThreads();
+			}
+
 		}
 
 	}
@@ -289,15 +188,15 @@ public class BeeStrategy3 implements IStrategy {
 	 * will get into the SolutionStore. The method sets the <i>interrupted</i>
 	 * and <i>set</i> variables
 	 * 
-	 * @param sd
+	 * @param searchTrajectory
 	 * @return boolean
 	 */
-	public boolean isSolution(SearchData sd) {
-		if (sd != null && sd.getOwnfitness().isSatisifiesHardObjectives()) {
+	public boolean isSolution(SearchTrajectory searchTrajectory) {
+		if (searchTrajectory != null && searchTrajectory.getOwnfitness().isSatisifiesHardObjectives()) {
 			while (dsm.getTrajectoryFromRoot().size() != 0) {
 				dsm.undoLastTransformation();
 			}
-			TrajectoryInfo ti = sd.getActualState();
+			TrajectoryInfo ti = searchTrajectory.getActualState();
 			for (ITransition tran : ti.getFullTransitionTrajectory()) {
 				logger.debug(tran);
 			}
@@ -343,34 +242,34 @@ public class BeeStrategy3 implements IStrategy {
 
 	}
 
-	private ArrayList<SearchData> getBestPatches(Integer sitesnum2) {
-		
+	public ArrayList<SearchTrajectory> getBestPatches(Integer sitesnum2) {
 
-		Collections.sort(this.patches, new Comparator<SearchData>() {
+		Collections.sort(this.patches, new Comparator<SearchTrajectory>() {
 
 			@Override
-			public int compare(SearchData o1, SearchData o2) {
+			public int compare(SearchTrajectory o1, SearchTrajectory o2) {
 				return context.getObjectiveComparatorHelper().compare(o1.getOwnfitness(), o2.getOwnfitness());
-
 			}
+
+		
 
 		});
 
-		this.bestpatches = new ArrayList<SearchData>();
+		this.bestpatches = new ArrayList<SearchTrajectory>();
 		int length = this.bestSitesNum;
 
 		if (bestSitesNum > patches.size())
 			length = patches.size();
-	
+
 		if (this.alwaysnew == false) {
 			for (int i = 0; i < length; i++) {
 				bestpatches.add(patches.get(i));
-		
+
 			}
 		} else {
-			Iterator<SearchData> it = patches.iterator();
+			Iterator<SearchTrajectory> it = patches.iterator();
 			while (length > 0 && it.hasNext()) {
-				SearchData sd = it.next();
+				SearchTrajectory sd = it.next();
 				if (sd.getHasChild() == false) {
 					bestpatches.add(sd);
 					length--;
@@ -390,9 +289,9 @@ public class BeeStrategy3 implements IStrategy {
 	 *            size of the trajectory of the neighbourbee
 	 * @return
 	 */
-	private boolean createNeighbourhoodBee(SearchData oldSearchData, IStopCondition stopCond) {
+	public boolean createNeighbourhoodBee(SearchTrajectory oldSearchData, IStopCondition stopCond) {
 		if (oldSearchData != null) {
-			
+
 			SearchData sd = new SearchData();
 			oldSearchData.setHasChild(true);
 			sd.setHasChild(false);
@@ -400,11 +299,11 @@ public class BeeStrategy3 implements IStrategy {
 			sd.setParentTrajectory(oldSearchData.getActualState());
 			sd.setHasParent(true);
 			sd.setParentfitness(oldSearchData.getOwnfitness());
-			sd.stopCond =  stopCond;			
-			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);			
+
+			sd.stopCond = stopCond;
+			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
 			sd.setStrategy(strategy.createMiniStrategy(this));
 			strategy.setMainStrategy(this);
-
 
 			return addToSearchablePatches(sd);
 		}
@@ -440,19 +339,19 @@ public class BeeStrategy3 implements IStrategy {
 	 *            size of the trajectory of the randombee
 	 * @return
 	 */
-	private Boolean createRandomBee(IStopCondition stopCondition) {		
-			SearchData sd = new SearchData();		
-			sd.setActualState(new TrajectoryInfo(this.rootState, this.rootTrajectory));
-			sd.setHasChild(false);
-			sd.setParentTrajectory(new TrajectoryInfo(this.rootState, this.rootTrajectory));
-			sd.setHasParent(false);
-			sd.setParentfitness(null);
-			sd.stopCond = stopCondition;
-			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
-			sd.setStrategy(strategy.createMiniStrategy(this));
-			strategy.setMainStrategy(this);
-			sd.setStrategy(strategy);
-			return addToSearchablePatches(sd);
+	public Boolean createRandomBee(IStopCondition stopCondition) {
+		SearchData sd = new SearchData();
+		sd.setActualState(new TrajectoryInfo(this.rootState, this.rootTrajectory));
+		sd.setHasChild(false);
+		sd.setParentTrajectory(new TrajectoryInfo(this.rootState, this.rootTrajectory));
+		sd.setHasParent(false);
+		sd.setParentfitness(null);
+		sd.stopCond = stopCondition;
+		IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
+		sd.setStrategy(strategy.createMiniStrategy(this));
+		strategy.setMainStrategy(this);
+		sd.setStrategy(strategy);
+		return addToSearchablePatches(sd);
 
 	}
 
@@ -508,11 +407,11 @@ public class BeeStrategy3 implements IStrategy {
 
 	// ---------------getters and setters --------------------
 
-	public ArrayList<SearchData> getPatches() {
+	public ArrayList<SearchTrajectory> getPatches() {
 		return patches;
 	}
 
-	public void setPatches(ArrayList<SearchData> patches) {
+	public void setPatches(ArrayList<SearchTrajectory> patches) {
 		this.patches = patches;
 	}
 
@@ -548,7 +447,7 @@ public class BeeStrategy3 implements IStrategy {
 		this.interrupted = interrupted;
 	}
 
-	public ArrayList<SearchData> getBestpatches() {
+	public ArrayList<SearchTrajectory> getBestpatches() {
 		return bestpatches;
 	}
 
@@ -620,9 +519,118 @@ public class BeeStrategy3 implements IStrategy {
 		}
 		this.numberOfMaxBees = numberOfMaxBees;
 	}
+	
+	public ArrayList<ExplorerThread> getWorkerThreads() {
+		return workerThreads;
+	}
+
+	public void setWorkerThreads(ArrayList<ExplorerThread> workerThreads) {
+		this.workerThreads = workerThreads;
+	}
+
+	public Boolean getAlwaysnew() {
+		return alwaysnew;
+	}
+
+	public void setAlwaysnew(Boolean alwaysnew) {
+		this.alwaysnew = alwaysnew;
+	}
+
+	public ConcurrentLinkedQueue<SearchData> getSearchablePatches() {
+		return searchablePatches;
+	}
+
+	public void setSearchablePatches(ConcurrentLinkedQueue<SearchData> searchablePatches) {
+		this.searchablePatches = searchablePatches;
+	}
+
+	public ConcurrentLinkedQueue<SearchData> getInstancesToBeChecked() {
+		return instancesToBeChecked;
+	}
+
+	public void setInstancesToBeChecked(ConcurrentLinkedQueue<SearchData> instancesToBeChecked) {
+		this.instancesToBeChecked = instancesToBeChecked;
+	}
+
+	public SearchContext getSearchContext() {
+		return searchContext;
+	}
+
+	public void setSearchContext(SearchContext searchContext) {
+		this.searchContext = searchContext;
+	}
+
+	public Logger getLogger() {
+		return logger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
+	public Integer getRadiusOfRandomSearch() {
+		return radiusOfRandomSearch;
+	}
+
+	public void setRadiusOfRandomSearch(Integer radiusOfRandomSearch) {
+		this.radiusOfRandomSearch = radiusOfRandomSearch;
+	}
+
+	public int getIterations() {
+		return iterations;
+	}
+
+	public void setIterations(int iterations) {
+		this.iterations = iterations;
+	}
+
+	public void setBestpatches(ArrayList<SearchTrajectory> bestpatches) {
+		this.bestpatches = bestpatches;
+	}
+	
+	public IStrategySelector getStrategySelector() {
+		return strategySelector;
+	}
+
+	public void setStrategySelector(IStrategySelector strategySelector) {
+		this.strategySelector = strategySelector;
+	}
+	
+	public Integer getBestSitesNum() {
+		return bestSitesNum;
+	}
+
+	public void setBestSitesNum(Integer bestSitesNum) {
+		this.bestSitesNum = bestSitesNum;
+	}
 
 	
 
+	public IStopCondition getMiniStrategyStopCondition() {
+		return miniStrategyStopCondition;
+	}
+
+	public void setMiniStrategyStopCondition(IStopCondition miniStrategyStopCondition) {
+		this.miniStrategyStopCondition = miniStrategyStopCondition;
+	}
 	
+	public IState getRootState() {
+		return rootState;
+	}
+
+	public void setRootState(IState rootState) {
+		this.rootState = rootState;
+	}
+
+	
+
+	public TrajectoryInfo getRootTrajectory() {
+		return rootTrajectory;
+	}
+
+	public void setRootTrajectory(TrajectoryInfo rootTrajectory) {
+		this.rootTrajectory = rootTrajectory;
+	}
+
 
 }

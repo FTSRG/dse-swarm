@@ -1,4 +1,4 @@
-package strategySelectors;
+package org.eclipse.viatra.dse.strategySelectors;
 import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;

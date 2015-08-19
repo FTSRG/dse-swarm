@@ -1,7 +1,8 @@
-package stopConditions;
+package org.eclipse.viatra.dse.stopConditions;
 
 import java.util.Collection;
 
+import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.designspace.api.IState;
 
 public class NumberOfFiredTransitionCondition implements IStopCondition{
@@ -43,6 +44,10 @@ public class NumberOfFiredTransitionCondition implements IStopCondition{
 	public void newIteration() {
 		
 		
+	}
+
+	@Override
+	public void setContext(ThreadContext context) {		
 	}
 	
 

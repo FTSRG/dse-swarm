@@ -26,24 +26,24 @@ public class StartProblem {
 	
 	UsedMachines UM;
 	
-	public StartProblem(){
-		init();
+	public StartProblem(String modeluri){
+		init(modeluri);
 	}
 
-	private void init() {
+	private void init(String modeluri) {
 		 ServerParkPackage.eINSTANCE.eClass();
 		   // Defining that the files with the .erdiagram extension should be parsed as an xmi.
 		   Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
 		   reg.getExtensionToFactoryMap().put("serverpark", new XMIResourceFactoryImpl());
-		   load();	
+		   load(modeluri);	
 	}
 
-	private Resource load() {
+	private Resource load(String modeluri) {
 		// TODO Auto-generated method stub
 		 ResourceSet resSet = new ResourceSetImpl();
-		String uristring = "D:/git/git/viatra-dse-swarm/plugins/test/beetesztek/teszt6.serverpark";
+		//String uristring = "D:/git/git/viatra-dse-swarm/plugins/test/beetesztek/teszt6.serverpark";
 		 //String uristring ="D:/eclipse/eclipse_dse/runtime-EclipseApplication/test/helper_incqueryd_machineData.serverpark";
-		 URI uri = URI.createFileURI(uristring);
+		 URI uri = URI.createFileURI(modeluri);
 		 Resource resource = resSet.getResource(uri, true);
 		 UM = (UsedMachines) resource.getContents().get(0);
 		 System.out.println(UM.getAllMachines().get(0).getIP());

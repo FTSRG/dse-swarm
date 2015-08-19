@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import org.eclipse.viatra.dse.api.DSEException;
-import org.eclipse.viatra.dse.beestrategy.BeeStrategy3;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
@@ -14,14 +14,14 @@ import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
 public class AddNewTransition extends AbstractMiniStrategy{
 	
-	protected AddNewTransition(BeeStrategy3 bs) {
+	protected AddNewTransition(StrategyCombiner bs) {
 		super(bs);
 	}
 
 
 
 	@Override
-	public IMiniStrategy createMiniStrategy(BeeStrategy3 bs) {
+	public IMiniStrategy createMiniStrategy(StrategyCombiner bs) {
 		return new AddNewTransition(bs);
 	}
 
@@ -35,12 +35,9 @@ public class AddNewTransition extends AbstractMiniStrategy{
 		for (ITransition tran  :  this.searchData.getParentTrajectory().getFullTransitionTrajectory()) {
 			if(randomNumber!=0){
 				randomNumber--;
-				try{
+				if(dsm.getTransitionsFromCurrentState().contains(tran)){
 					dsm.fireActivation(tran);
 					newti.addStep(tran);
-					}
-				catch (DSEException e){
-					
 				}				
 			}
 			else{
