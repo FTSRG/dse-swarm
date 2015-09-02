@@ -16,6 +16,7 @@ import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
+import org.eclipse.viatra.dse.mainStrategy.IMainStrategy;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore;
 import org.eclipse.viatra.dse.solutionstore.ISolutionStore.StopExecutionType;
@@ -51,7 +52,12 @@ public class StrategyCombiner implements IStrategy {
 	private IStrategySelector strategySelector;
 	private SearchContext searchContext;
 	private Integer eliteBeesNum = 1;
+	private IMainStrategy mainStrategy;
 	
+
+	public IMainStrategy getMainStrategy() {
+		return mainStrategy;
+	}
 
 	private Logger logger = Logger.getLogger(StrategyCombiner.class);
 
@@ -82,11 +88,11 @@ public class StrategyCombiner implements IStrategy {
 
 	@Override
 	public void explore() {
-		if ((numberOfMaxBees
-				- (this.eliteSitesNum * (eliteBeesNum - otherBeesNum) + this.bestSitesNum * otherBeesNum)) < 1) {
-			throw new DSEException(
-					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
-		}
+//		if ((numberOfMaxBees
+//				- (this.eliteSitesNum * (eliteBeesNum - otherBeesNum) + this.bestSitesNum * otherBeesNum)) < 1) {
+//			throw new DSEException(
+//					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
+//		}
 		if (this.strategySelector == null) {
 			throw new DSEException("StrategySelector is undefind, it can be set with Strategy.setStrategySelector");
 		}
@@ -106,6 +112,8 @@ public class StrategyCombiner implements IStrategy {
 			this.exploreParalell();
 		else
 			this.exploreOneThread();
+		
+		System.out.println("explored");
 	}
 
 	private void exploreOneThread() {
@@ -137,7 +145,9 @@ public class StrategyCombiner implements IStrategy {
 		// we have one main thread, and the user can give us the number of the
 		// workerthreads ( DesignSpaceExplorer.setMaxNumberOfThreads(x))
 		startWorkerThreads();
-
+		this.mainStrategy.initMainStrategy(this);
+		this.mainStrategy.exploreParalell();
+		
 		
 	}
 
@@ -147,9 +157,17 @@ public class StrategyCombiner implements IStrategy {
 	 * it will be put into the patch list, if it is a stupidBee than it will be
 	 * put into the patch where it belongs
 	 */
-	public void getBackBees() {
+	public synchronized void getBackBees() {
 		SearchData sd = getFromConcurrentList();
+		//TODO kiszedni
+//		try {
+//			this.wait();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		if (sd != null) {
+			System.out.println("found sd");
 			this.decreasenumberOfActiveBees();
 			if (sd.getTrajectories() != null) {
 				for (int j = 0; j < sd.getTrajectories().size(); j++) {
@@ -192,6 +210,7 @@ public class StrategyCombiner implements IStrategy {
 	 * @return boolean
 	 */
 	public boolean isSolution(SearchTrajectory searchTrajectory) {
+		System.out.println("solution");
 		if (searchTrajectory != null && searchTrajectory.getOwnfitness().isSatisifiesHardObjectives()) {
 			while (dsm.getTrajectoryFromRoot().size() != 0) {
 				dsm.undoLastTransformation();
@@ -264,6 +283,7 @@ public class StrategyCombiner implements IStrategy {
 		if (this.alwaysnew == false) {
 			for (int i = 0; i < length; i++) {
 				bestpatches.add(patches.get(i));
+				System.out.println("fitness: "+patches.get(i).getOwnfitness());
 
 			}
 		} else {
@@ -300,7 +320,7 @@ public class StrategyCombiner implements IStrategy {
 			sd.setHasParent(true);
 			sd.setParentfitness(oldSearchData.getOwnfitness());
 
-			sd.stopCond = stopCond;
+			sd.stopCond = stopCond.createNew(stopCond);
 			IMiniStrategy strategy = (IMiniStrategy) this.strategySelector.selectStrategy(sd, this.searchContext);
 			sd.setStrategy(strategy.createMiniStrategy(this));
 			strategy.setMainStrategy(this);
@@ -316,9 +336,15 @@ public class StrategyCombiner implements IStrategy {
 	 * than gives back null
 	 */
 	private synchronized SearchData getFromConcurrentList() {
-		if (this.instancesToBeChecked.size() > 0) {
+		if (!this.instancesToBeChecked.isEmpty()) {
 			return this.instancesToBeChecked.poll();
 		}
+//		try {
+//			this.wait(5);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		return null;
 	}
 	/**
@@ -512,11 +538,11 @@ public class StrategyCombiner implements IStrategy {
 	}
 
 	public void setNumberOfMaxBees(int numberOfMaxBees) throws Exception {
-		if ((numberOfMaxBees
-				- (this.eliteSitesNum * (eliteBeesNum - otherBeesNum) + this.bestSitesNum * otherBeesNum)) < 1) {
-			throw new Exception(
-					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
-		}
+//		if ((numberOfMaxBees
+//				- (this.eliteSitesNum * (eliteBeesNum - otherBeesNum) + this.bestSitesNum * otherBeesNum)) < 1) {
+//			throw new Exception(
+//					"Invalid value, numberOfMaxBees must be bigger than eliteSitesNum*(eliteBeesNum-otherBeesNum)+bestSitesNum*otherBeesNum");
+//		}
 		this.numberOfMaxBees = numberOfMaxBees;
 	}
 	
@@ -630,6 +656,11 @@ public class StrategyCombiner implements IStrategy {
 
 	public void setRootTrajectory(TrajectoryInfo rootTrajectory) {
 		this.rootTrajectory = rootTrajectory;
+	}
+
+	public void setMainStrategy(IMainStrategy ms) {
+		this.mainStrategy = ms;
+		
 	}
 
 

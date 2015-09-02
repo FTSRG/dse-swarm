@@ -2,8 +2,8 @@ package org.eclipse.viatra.dse.beestrategy.createbeestrategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
@@ -16,13 +16,14 @@ import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
-public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
+public class RandomHillClimbingMiniStrategy extends AbstractMiniStrategy {
 	enum HillClimbingStrategyState {
 		TRY_AND_SAVE, COMPARE_AND_STEP
 	}
 
-	private Collection<TrajectoryFitness> besttransitions;
+	private Collection<ITransition> besttransitions;
 	private DesignSpaceManager dsm;
+	private Random rand = new Random();
 
 	private HillClimbingStrategyState state = HillClimbingStrategyState.TRY_AND_SAVE;
 
@@ -41,7 +42,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 		this.searchData = sd;
 	}
 
-	public CreateBeeWithHillClimbing(StrategyCombiner bs) {
+	public RandomHillClimbingMiniStrategy(StrategyCombiner bs) {
 		super(bs);
 	}
 	//
@@ -103,43 +104,71 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	}
 
 	ITransition selectNextTransition() {
-		
+		ITransition bestTransition = null;
 		Collection<? extends ITransition> transitions = null;
-		TrajectoryFitness randomBestFitness = null;
-		
+		bestFitness = null;
+
 		if (besttransitions == null) {
-			besttransitions = new ArrayList<TrajectoryFitness>();
+			besttransitions = new ArrayList<ITransition>();
 			transitions = dsm.getTransitionsFromCurrentState(filterOptions);
 			if (transitions.size() == 0)
 				return null;
-			randomBestFitness = null;
+			bestTransition = transitions.iterator().next();
+			Fitness bestFitness = null;
 			Iterator<? extends ITransition> it = transitions.iterator();
-			context.getObjectiveComparatorHelper().clearTrajectoryFitnesses();
-			while(it.hasNext()){
-				ITransition transition = it.next();
-				dsm.fireActivation(transition);	
-				if(!this.statesInTrajectory.contains(dsm.getCurrentState())){
-					context.getObjectiveComparatorHelper().addTrajectoryFitness(new TrajectoryFitness(transition, context.calculateFitness()));
+			//int rounds = rand.nextInt(transitions.size() / 1) + 1;
+			int rounds = 1;
+			int actround = 0;
+			System.out.println(rounds);
+			while (it.hasNext()) {
+				actround++;
+				if (actround % rounds == 0) {
+					ITransition actualTran = it.next();
+					// System.out.print(actualTran + " from: "+
+					// dsm.getCurrentState());
+					dsm.fireActivation(actualTran);
+					// System.out.println(" "+context.calculateFitness());
+					if (bestFitness == null) {
+						bestFitness = context.calculateFitness();
+					} else {
+						if (context.getObjectiveComparatorHelper().compare(context.calculateFitness(), bestFitness) == 1
+								&& !this.statesInTrajectory.contains(dsm.getCurrentState())) {
+							bestFitness = context.getLastFitness();
+							bestTransition = actualTran;
+						}
+					}
+					dsm.undoLastTransformation();
 				}
-				dsm.undoLastTransformation();
+				if(bestTransition == null){
+					
+				}
 			}
-			besttransitions = context.getObjectiveComparatorHelper().getParetoFront();
-			randomBestFitness = context.getObjectiveComparatorHelper().getRandomBest();
-			besttransitions.remove(randomBestFitness);
-			
-		
-			
-			while(besttransitions.size()>0 && searchData.getParentfitness()!=null && context.getObjectiveComparatorHelper().compare(randomBestFitness.fitness, searchData.getParentfitness())==-1){
-				randomBestFitness =  context.getObjectiveComparatorHelper().getRandomBest();
-				besttransitions.remove(randomBestFitness);
-			}
-			if(searchData.getParentfitness()!=null && context.getObjectiveComparatorHelper().compare(randomBestFitness.fitness, searchData.getParentfitness())==-1){
+			it = transitions.iterator();
+			if (searchData.getParentfitness() != null && context.getObjectiveComparatorHelper().compare(bestFitness,
+					searchData.getParentfitness()) == -1) {
 				return null;
 			}
-			
-		}			
-		int i = randomBestFitness.trajectory.length;
-		return randomBestFitness.trajectory[i-1];
+			while (it.hasNext()) {
+				ITransition actualTran = it.next();
+				dsm.fireActivation(actualTran);
+
+				if (context.getObjectiveComparatorHelper().compare(context.calculateFitness(), bestFitness) != -1
+						&& !this.statesInTrajectory.contains(dsm.getCurrentState())) {
+					this.besttransitions.add(actualTran);
+				}
+
+				dsm.undoLastTransformation();
+			}
+		}
+		if (besttransitions.size() == 0) {
+			return null;
+		}
+
+		bestTransition = besttransitions.iterator().next();
+
+		// System.out.println("selected transition: "+bestTransition);
+		besttransitions.remove(bestTransition);
+		return bestTransition;
 
 	}
 

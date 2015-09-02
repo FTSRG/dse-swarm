@@ -6,7 +6,7 @@ import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 
-public class BeeStrategy implements MainStrategy{
+public class BeeStrategy implements IMainStrategy{
 	StrategyCombiner sc;
 	
 	public void initMainStrategy(StrategyCombiner sc){
@@ -58,8 +58,8 @@ public class BeeStrategy implements MainStrategy{
 							RecruitedBeesNum = sc.getOtherBeesNum();
 						for (int j = 0; j < RecruitedBeesNum; j++) {
 							try {
-								IStopCondition cond = sc.getMiniStrategyStopCondition().createNew(sc.getRadiusOfRandomSearch());
-								sc.createNeighbourhoodBee(sc.getBestpatches().get(i), cond);
+//								IStopCondition cond = sc.getMiniStrategyStopCondition().createNew(sc.getRadiusOfRandomSearch());
+								sc.createNeighbourhoodBee(sc.getBestpatches().get(i), sc.getMiniStrategyStopCondition().createNew(null));
 							} catch (Exception e) {
 								sc.getLogger().debug(e);
 								String s = sc.getBestpatches() + " " + sc.getBestpatches().size() + " " + sc.getRadiusOfRandomSearch() + " " + length

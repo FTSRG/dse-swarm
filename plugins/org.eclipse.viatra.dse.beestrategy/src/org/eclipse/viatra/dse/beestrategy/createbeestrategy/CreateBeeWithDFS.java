@@ -40,6 +40,7 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 
 	@Override
 	public synchronized void explore() {
+		System.out.println("stopcond_before_start: "+searchData.stopCond.isStopConditionReached());
 		while (!searchData.stopCond.isStopConditionReached()) {
 			ITransition nextTran = selectNextTransition();
  			while (nextTran == null && dsm.getTrajectoryFromRoot().size() > 0) {

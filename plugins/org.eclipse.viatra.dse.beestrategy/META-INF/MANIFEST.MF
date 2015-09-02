@@ -5,8 +5,10 @@ Bundle-SymbolicName: org.eclipse.viatra.dse.beestrategy
 Bundle-Version: 1.0.0.qualifier
 Export-Package: org.eclipse.viatra.dse.beestrategy,
  org.eclipse.viatra.dse.beestrategy.createbeestrategy,
+ org.eclipse.viatra.dse.mainStrategy,
  org.eclipse.viatra.dse.stopConditions,
- org.eclipse.viatra.dse.strategySelectors
+ org.eclipse.viatra.dse.strategySelectors,
+ simulators
 Require-Bundle: org.eclipse.viatra.dse.base,
  org.eclipse.xtend.lib;bundle-version="2.8.3",
  org.eclipse.viatra.dse.designspace

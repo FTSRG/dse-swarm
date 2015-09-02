@@ -6,7 +6,7 @@ import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 import org.eclipse.viatra.dse.strategySelectors.AnnealingStrategySelector;
 import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;
 
-public class SimulatedAnnealing implements MainStrategy{
+public class SimulatedAnnealing implements IMainStrategy{
 	
 	StrategyCombiner sc;
 

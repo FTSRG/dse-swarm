@@ -33,6 +33,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	public void explore() {
 		SearchData entry = null;
 		while (!interrupted) {
+			
 			while (searchablePatches == null) {
 				try {
 					throw new Exception("not all Collections are initialized which are needed for BeeStrategy");
@@ -53,6 +54,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				// collect a searchData from searchablePatches
 				do {
 					entry = getNewSearch();
+					
 				} while (entry == null);
 
 				// get the strategy, which will be runned
@@ -60,6 +62,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				// get the place of the patch, and go there (set context to
 				// the right place)
 				is.initStrategy(context);
+				entry.stopCond.setContext(context);
 				while (context.getDesignSpaceManager().getTrajectoryInfo().getDepthFromRoot() != 0) {
 					context.getDesignSpaceManager().undoLastTransformation();
 				}
@@ -71,18 +74,24 @@ public class BeeStrategyWorkerThread implements IStrategy {
 					reachedStatesInTrajectory.add(context.getDesignSpaceManager().getCurrentState());
 				}
 				logger.debug("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
+				System.out.println("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
 				// if it is a neighbourhoodbee, than run a neighbourhoodBee
 				// from the patch
 				entry.getStrategy().initStrategy(context);
 				entry.getStrategy().setStatesInTrajectory(reachedStatesInTrajectory);
 				entry.getStrategy().setSearchData(entry);
 				entry.getStrategy().explore();
+				System.out.println("returned");
 				SearchData sd = entry.getStrategy().returnResult();
+				
 				if (sd == null) {
 					sd = new SearchData();
 					sd.setParentTrajectory(null);
 				}
-				while (!setNewSearchData(sd));					
+				System.out.println(sd.toString());
+				while (!setNewSearchData(sd));	
+				System.out.println(sd.toString());
+				//logger.debug("searchData is given back with: "+context.getDesignSpaceManager().getTrajectoryInfo());
 
 			}
 
@@ -103,7 +112,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	}
 
 	private synchronized boolean setNewSearchData(SearchData sd) {
-		int i = 10;
+		int i = 1;
 		while (!this.instancesToBeChecked.add(sd)) {
 			try {
 				this.wait(i);
