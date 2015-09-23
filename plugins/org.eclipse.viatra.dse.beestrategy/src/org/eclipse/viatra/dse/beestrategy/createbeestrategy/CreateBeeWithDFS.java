@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
+import org.eclipse.viatra.dse.designspace.api.IState.TraversalStateType;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
@@ -17,6 +18,7 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 	FilterOptions fo = new FilterOptions().nothingIfCut().untraversedOnly();	
 	private boolean interrupted;
 	private Logger logger = Logger.getLogger(getClass());
+	private Collection<? extends ITransition> transitions = null;
 	
 
 	public boolean isInterrupted() {
@@ -40,27 +42,37 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 
 	@Override
 	public synchronized void explore() {
-		System.out.println("stopcond_before_start: "+searchData.stopCond.isStopConditionReached());
-		while (!searchData.stopCond.isStopConditionReached()) {
+		System.out.println("startingpoint2: "+dsm.getCurrentState());
+		this.transitions=null;
+		while (!searchData.stopCond.isStopConditionReached()) {			
 			ITransition nextTran = selectNextTransition();
+			Boolean stepped = true;
  			while (nextTran == null && dsm.getTrajectoryFromRoot().size() > 0) {
 				dsm.undoLastTransformation();
 				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
 				nextTran = selectNextTransition();
+				
 			}
 			if (nextTran == null && dsm.getTrajectoryFromRoot().size() == 0){
 				this.searchData=null;
 				return;
 			}
 			dsm.fireActivation(nextTran);
+			
 			logger.debug("state: "+ context.getDesignSpaceManager().getCurrentState());
 			searchData.stopCond.newFireTransitionHappend(dsm.getCurrentState());
 			if (this.isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
+				context.getDesignSpaceManager().getCurrentState().setTraversalState(TraversalStateType.TRAVERSED);
 				dsm.undoLastTransformation();
+				stepped = false;
+				
 				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
 			}
+			System.out.println("stepped: "+stepped);
+			if(stepped) this.transitions=null;
 		
 		}
+		System.out.println(searchData.getActualState());
 		searchData.setActualState(dsm.getTrajectoryInfo());
 		searchData.setOwnfitness(context.calculateFitness());
 		TrajectoryFitness tf = new TrajectoryFitness(searchData.getActualState(), context.getLastFitness());
@@ -72,9 +84,11 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 
 	public ITransition selectNextTransition() {
 		// if there is a state from here, which were not processed
-		Integer actTranNum = dsm.getTransitionsFromCurrentState(fo).size();
-		if (actTranNum > 0) {
-			Collection<? extends ITransition> transitions = dsm.getTransitionsFromCurrentState(fo);
+		if(transitions==null){
+			transitions = dsm.getTransitionsFromCurrentState(fo);
+		}
+		
+		if (transitions.size() > 0) {
 			int index = new Random().nextInt(transitions.size());
 			Iterator<? extends ITransition> iterator = transitions.iterator();
 			while (iterator.hasNext() && index != 0) {
@@ -83,9 +97,10 @@ public class CreateBeeWithDFS extends AbstractMiniStrategy {
 			}
 			// give back the selected transition
 			ITransition transition = iterator.next();
+			iterator.remove();
 			return transition;
 		}
-
+		this.transitions=null;
 		return null;
 	}
 

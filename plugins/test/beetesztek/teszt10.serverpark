@@ -1,2 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mit.bme.hu.serverpark:UsedMachines xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark"/>
+<mit.bme.hu.serverpark:UsedMachines xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:mit.bme.hu.serverpark="mit.bme.hu.serverpark" running="//@allMachines.0 //@allMachines.1 //@allMachines.2 //@allMachines.3 //@allMachines.4 //@allMachines.5" newAttribute="">
+  <processes id="p1" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p2" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p3" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p4" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p5" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p6" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p7" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p8" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p9" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p10" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p11" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p12" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p13" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p14" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p15" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p16" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p17" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p18" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p19" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p20" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p21" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p22" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p23" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p24" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p25" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p26" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p27" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p28" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p29" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p30" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p31" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p32" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p33" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p34" size="30" endStateIp="//@allMachines.3"/>
+  <processes id="p35" size="30" endStateIp="//@allMachines.3"/>
+  <processes id="p36" size="30" endStateIp="//@allMachines.3"/>
+  <processes id="p37" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p38" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p39" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p40" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p41" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p42" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p43" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p44" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p45" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p46" size="30" endStateIp="//@allMachines.1"/>
+  <processes id="p47" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p48" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p49" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p50" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p51" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p52" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p53" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p54" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p55" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p56" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p57" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p58" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p59" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p60" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p61" size="30" endStateIp="//@allMachines.0"/>
+  <processes id="p62" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p63" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p64" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p65" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p66" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p67" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p68" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p69" size="30" endStateIp="//@allMachines.2"/>
+  <processes id="p70" size="30" endStateIp="//@allMachines.3"/>
+  <processes id="p71" size="30" endStateIp="//@allMachines.3"/>
+  <processes id="p72" size="30" endStateIp="//@allMachines.3"/>
+  <allMachines IP="m1" UsedMemory="60" MemorySize="4000" CPUNum="1" serialNumber="1" machineProcesses="//@processes.0 //@processes.1"/>
+  <allMachines IP="m2" UsedMemory="30" MemorySize="2000" CPUNum="1" serialNumber="2" machineProcesses="//@processes.2"/>
+  <allMachines IP="m3" UsedMemory="90" MemorySize="2000" CPUNum="1" serialNumber="3" machineProcesses="//@processes.3 //@processes.4 //@processes.5"/>
+  <allMachines IP="m4" UsedMemory="60" MemorySize="2000" CPUNum="1" serialNumber="1"/>
+  <allMachines IP="m5" UsedMemory="30" MemorySize="2000" CPUNum="1" serialNumber="2"/>
+  <allMachines IP="m6" UsedMemory="90" MemorySize="2000" CPUNum="1" serialNumber="3" machineProcesses="//@processes.9 //@processes.10 //@processes.11 //@processes.12 //@processes.13 //@processes.14 //@processes.15 //@processes.16 //@processes.17 //@processes.18 //@processes.19 //@processes.20 //@processes.21 //@processes.22 //@processes.23 //@processes.24 //@processes.25 //@processes.26 //@processes.27 //@processes.28 //@processes.29 //@processes.30 //@processes.31 //@processes.32 //@processes.33 //@processes.34 //@processes.35 //@processes.6 //@processes.7 //@processes.8 //@processes.36 //@processes.37 //@processes.38 //@processes.39 //@processes.40 //@processes.41 //@processes.42 //@processes.43 //@processes.44 //@processes.45 //@processes.46 //@processes.47 //@processes.48 //@processes.49 //@processes.50 //@processes.51 //@processes.52 //@processes.53 //@processes.54 //@processes.55 //@processes.56 //@processes.57 //@processes.58 //@processes.59 //@processes.60 //@processes.61 //@processes.62 //@processes.63 //@processes.64 //@processes.65 //@processes.66 //@processes.67 //@processes.68 //@processes.69 //@processes.70 //@processes.71"/>
+</mit.bme.hu.serverpark:UsedMachines>

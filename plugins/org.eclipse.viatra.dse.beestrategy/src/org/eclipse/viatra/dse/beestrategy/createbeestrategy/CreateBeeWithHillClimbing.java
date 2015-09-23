@@ -11,6 +11,7 @@ import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.designspace.api.IGetCertainTransitions.FilterOptions;
+import org.eclipse.viatra.dse.designspace.api.IState.TraversalStateType;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.ObjectiveComparatorHelper;
@@ -103,10 +104,10 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 	}
 
 	ITransition selectNextTransition() {
-		
+
 		Collection<? extends ITransition> transitions = null;
 		TrajectoryFitness randomBestFitness = null;
-		
+		System.out.println("hali selectNextTransition1");
 		if (besttransitions == null) {
 			besttransitions = new ArrayList<TrajectoryFitness>();
 			transitions = dsm.getTransitionsFromCurrentState(filterOptions);
@@ -115,31 +116,52 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 			randomBestFitness = null;
 			Iterator<? extends ITransition> it = transitions.iterator();
 			context.getObjectiveComparatorHelper().clearTrajectoryFitnesses();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				ITransition transition = it.next();
-				dsm.fireActivation(transition);	
-				if(!this.statesInTrajectory.contains(dsm.getCurrentState())){
-					context.getObjectiveComparatorHelper().addTrajectoryFitness(new TrajectoryFitness(transition, context.calculateFitness()));
+				dsm.fireActivation(transition);
+
+				if (!this.statesInTrajectory.contains(dsm.getCurrentState())) {
+					context.getObjectiveComparatorHelper()
+							.addTrajectoryFitness(new TrajectoryFitness(transition, context.calculateFitness()));
 				}
 				dsm.undoLastTransformation();
 			}
-			besttransitions = context.getObjectiveComparatorHelper().getParetoFront();
-			randomBestFitness = context.getObjectiveComparatorHelper().getRandomBest();
-			besttransitions.remove(randomBestFitness);
-			
-		
-			
-			while(besttransitions.size()>0 && searchData.getParentfitness()!=null && context.getObjectiveComparatorHelper().compare(randomBestFitness.fitness, searchData.getParentfitness())==-1){
-				randomBestFitness =  context.getObjectiveComparatorHelper().getRandomBest();
-				besttransitions.remove(randomBestFitness);
+			if (context.getObjectiveComparatorHelper().getTrajectoryFitnesses().size() == 0) {
+				besttransitions = context.getObjectiveComparatorHelper().getParetoFront();
+				if (besttransitions.size() != 0) {
+					randomBestFitness = context.getObjectiveComparatorHelper().getRandomBest();
+					besttransitions.remove(randomBestFitness);
+				} else {
+					besttransitions = new ArrayList<TrajectoryFitness>();
+				}
 			}
-			if(searchData.getParentfitness()!=null && context.getObjectiveComparatorHelper().compare(randomBestFitness.fitness, searchData.getParentfitness())==-1){
+			else{
+				System.out.println("itt voltunk ");
 				return null;
 			}
-			
-		}			
+
+			while (besttransitions.size() > 0 && searchData.getParentfitness() != null
+					&& context.getObjectiveComparatorHelper().compare(randomBestFitness.fitness,
+							searchData.getParentfitness()) == -1) {
+				randomBestFitness = context.getObjectiveComparatorHelper().getRandomBest();
+				besttransitions.remove(randomBestFitness);
+				System.out.println("hali selectNextTransition4");
+			}
+			System.out.println("hali selectNextTransition4.5");
+			if (searchData.getParentfitness() != null && context.getObjectiveComparatorHelper()
+					.compare(randomBestFitness.fitness, searchData.getParentfitness()) == -1) {
+				System.out.println("return null");
+				return null;
+			}
+			System.out.println("5");
+
+		}
+		System.out.println("6");
 		int i = randomBestFitness.trajectory.length;
-		return randomBestFitness.trajectory[i-1];
+		System.out.println("6");
+		System.out.println(randomBestFitness.trajectory[i - 1]);
+		System.out.println("6");
+		return randomBestFitness.trajectory[i - 1];
 
 	}
 
@@ -158,13 +180,16 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 
 		// step patchsize many steps
 		while (!searchData.stopCond.isStopConditionReached()) {
+			System.out.println("hali");
 			ITransition nextTran = this.selectNextTransition();
 			while (nextTran == null && deepness >= 0) {
+				dsm.getCurrentState().setTraversalState(TraversalStateType.TRAVERSED);
 				dsm.undoLastTransformation();
 				besttransitions = null;
 				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
 				deepness--;
 				nextTran = this.selectNextTransition();
+				System.out.println(nextTran);
 			}
 			if (deepness == 0 && start == false || nextTran == null) {
 				this.searchData.setParentTrajectory(null);
@@ -175,7 +200,7 @@ public class CreateBeeWithHillClimbing extends AbstractMiniStrategy {
 			// System.out.println("CreateBeeWith_nextTranselection");
 			start = false;
 			dsm.fireActivation(nextTran);
-			System.out.println("do");
+			System.out.println("do " + nextTran);
 			Fitness actualFitness = context.calculateFitness();
 			searchData.stopCond.newFireTransitionHappend(dsm.getCurrentState());
 			if (isAlreadyFoundInThisTrajectory(dsm.getCurrentState())) {

@@ -53,7 +53,9 @@ public class StrategyCombiner implements IStrategy {
 	private SearchContext searchContext;
 	private Integer eliteBeesNum = 1;
 	private IMainStrategy mainStrategy;
+	private IStopCondition mainStrategyStopCondition;
 	
+
 
 	public IMainStrategy getMainStrategy() {
 		return mainStrategy;
@@ -167,9 +169,9 @@ public class StrategyCombiner implements IStrategy {
 //			e.printStackTrace();
 //		}
 		if (sd != null) {
-			System.out.println("found sd");
 			this.decreasenumberOfActiveBees();
 			if (sd.getTrajectories() != null) {
+				this.mainStrategy.SearchDataBack(sd);
 				for (int j = 0; j < sd.getTrajectories().size(); j++) {
 					if (sd.getTrajectories().get(j).getParentTrajectory() == null)
 						return;
@@ -330,6 +332,27 @@ public class StrategyCombiner implements IStrategy {
 
 		return false;
 	}
+	
+	public boolean createNeighbourhoodBee(IMiniStrategy strategy, SearchTrajectory oldSearchData, IStopCondition stopCond) {
+		if (oldSearchData != null) {
+
+			SearchData sd = new SearchData();
+			oldSearchData.setHasChild(true);
+			sd.setHasChild(false);
+			sd.setActualState(oldSearchData.getActualState());
+			sd.setParentTrajectory(oldSearchData.getActualState());
+			sd.setHasParent(true);
+			sd.setParentfitness(oldSearchData.getOwnfitness());
+
+			sd.stopCond = stopCond.createNew(stopCond);
+			sd.setStrategy(strategy.createMiniStrategy(this));
+			strategy.setMainStrategy(this);
+
+			return addToSearchablePatches(sd);
+		}
+
+		return false;
+	}
 
 	/**
 	 * get an element from the list instancesToBeChecked if it has, it it hasn't
@@ -338,6 +361,7 @@ public class StrategyCombiner implements IStrategy {
 	private synchronized SearchData getFromConcurrentList() {
 		if (!this.instancesToBeChecked.isEmpty()) {
 			return this.instancesToBeChecked.poll();
+			
 		}
 //		try {
 //			this.wait(5);
@@ -382,10 +406,12 @@ public class StrategyCombiner implements IStrategy {
 	}
 
 	// add an element to the seach
-	private synchronized boolean addToSearchablePatches(SearchData sd) {
+	public synchronized boolean addToSearchablePatches(SearchData sd) {
 		boolean success = this.searchablePatches.add(sd);
+		this.mainStrategy.SearchDataOut(sd);
 		if (success == true) {
 			this.increasenumberOfActiveBees();
+			
 		}
 		this.notifyAll();
 		return success;
@@ -662,6 +688,15 @@ public class StrategyCombiner implements IStrategy {
 		this.mainStrategy = ms;
 		
 	}
+	
+	public IStopCondition getMainStrategyStopCondition() {
+		return mainStrategyStopCondition;
+	}
+
+	public void setMainStrategyStopCondition(IStopCondition mainStrategyStopCondition) {
+		this.mainStrategyStopCondition = mainStrategyStopCondition;
+	}
+
 
 
 }

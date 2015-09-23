@@ -10,7 +10,7 @@ import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;
 
-public class ShortenTrajectory extends AbstractMiniStrategy{
+public class ShortenTrajectory extends AbstractMiniStrategy {
 
 	public ShortenTrajectory(StrategyCombiner bs) {
 		super(bs);
@@ -23,29 +23,39 @@ public class ShortenTrajectory extends AbstractMiniStrategy{
 
 	@Override
 	public void explore() {
-		Random randgen = new Random();		
-		int low = 0;
-		int high = this.searchData.getParentTrajectory().getDepthFromCrawlerRoot()-1;
-		int randomNumber = randgen.nextInt(high-low) + low;
-		TrajectoryInfo newti = new TrajectoryInfo(this.bs.getRootState(), this.bs.getRootTrajectory());
-		for (ITransition tran  :  this.searchData.getParentTrajectory().getFullTransitionTrajectory()) {
-			if(randomNumber!=0){
-				randomNumber--;
-				if(dsm.getTransitionsFromCurrentState().contains(tran)){
-					dsm.fireActivation(tran);
-					newti.addStep(tran);
-				}					
+		try {
+			Random randgen = new Random();
+			int low = 0;
+			int high = this.searchData.getParentTrajectory().getDepthFromCrawlerRoot();
+			TrajectoryInfo newti = new TrajectoryInfo(this.bs.getRootState(), this.bs.getRootTrajectory());
+			if (high != 0) {
+				int randomNumber = randgen.nextInt(high - low) + low;
+				for (ITransition tran : this.searchData.getParentTrajectory().getFullTransitionTrajectory()) {
+					if (randomNumber != 0) {
+						randomNumber--;
+						if (dsm.getTransitionsFromCurrentState().contains(tran)) {
+							try{
+							dsm.fireActivation(tran);
+							}catch(Exception e){
+								
+							}
+							newti.addStep(tran);
+						}
+					}
+				}
 			}
+			searchData.setActualState(newti);
+			searchData.setOwnfitness(context.calculateFitness());
+			searchData.setOwntrajectoryFitness(
+					new TrajectoryFitness(searchData.getActualState(), context.getLastFitness()));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		searchData.setActualState(newti);
-		searchData.setOwnfitness(context.calculateFitness());
-		searchData.setOwntrajectoryFitness(new TrajectoryFitness(searchData.getActualState(), context.getLastFitness()));
-
 	}
-	
+
 	@Override
 	public void setStatesInTrajectory(HashSet<IState> states) {
-		
+
 	}
 
 }

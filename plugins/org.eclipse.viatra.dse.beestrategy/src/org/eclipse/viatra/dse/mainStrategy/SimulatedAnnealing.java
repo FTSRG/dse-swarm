@@ -1,5 +1,7 @@
 package org.eclipse.viatra.dse.mainStrategy;
 
+import org.eclipse.viatra.dse.beestrategy.SearchData;
+import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
 import org.eclipse.viatra.dse.stopConditions.IStopCondition;
@@ -48,6 +50,24 @@ public class SimulatedAnnealing implements IMainStrategy{
 		AnnealingStrategySelector ss = new AnnealingStrategySelector();
 		ss.setStrategies(sc);
 		this.sc.setStrategySelector(ss);
+		
+	}
+
+	@Override
+	public void SearchDataOut(SearchData sc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void SearchDataBack(SearchData sc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void isSolution(SearchTrajectory searchTrajectory) {
+		// TODO Auto-generated method stub
 		
 	}
 

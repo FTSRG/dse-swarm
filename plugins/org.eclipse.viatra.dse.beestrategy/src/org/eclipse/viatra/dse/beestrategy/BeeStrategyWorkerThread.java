@@ -32,6 +32,7 @@ public class BeeStrategyWorkerThread implements IStrategy {
 	@Override
 	public void explore() {
 		SearchData entry = null;
+		try{
 		while (!interrupted) {
 			
 			while (searchablePatches == null) {
@@ -68,20 +69,22 @@ public class BeeStrategyWorkerThread implements IStrategy {
 				}
 				HashSet<IState> reachedStatesInTrajectory = new HashSet<IState>();
 				reachedStatesInTrajectory.add(context.getDesignSpaceManager().getCurrentState());
+				
 				List<ITransition> transitions = entry.getParentTrajectory().getFullTransitionTrajectory();
 				for (ITransition transition : transitions) {
+					
 					context.getDesignSpaceManager().fireActivation(transition);
 					reachedStatesInTrajectory.add(context.getDesignSpaceManager().getCurrentState());
 				}
+				System.out.println("starting point "+context.getDesignSpaceManager().getCurrentState());
+				System.out.println(entry.getTrajectories().get(0).getActualState());
 				logger.debug("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
-				System.out.println("search from: " + context.getDesignSpaceManager().getTrajectoryInfo());
 				// if it is a neighbourhoodbee, than run a neighbourhoodBee
 				// from the patch
 				entry.getStrategy().initStrategy(context);
 				entry.getStrategy().setStatesInTrajectory(reachedStatesInTrajectory);
 				entry.getStrategy().setSearchData(entry);
 				entry.getStrategy().explore();
-				System.out.println("returned");
 				SearchData sd = entry.getStrategy().returnResult();
 				
 				if (sd == null) {
@@ -95,6 +98,9 @@ public class BeeStrategyWorkerThread implements IStrategy {
 
 			}
 
+		}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 
 	}

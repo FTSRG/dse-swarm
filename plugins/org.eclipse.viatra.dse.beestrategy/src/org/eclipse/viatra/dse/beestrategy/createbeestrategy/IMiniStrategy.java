@@ -18,4 +18,5 @@ public interface IMiniStrategy extends IStrategy{
 	public void setSearchData(SearchData sd);
 	public SearchData returnResult();
 	public IMiniStrategy createMiniStrategy(StrategyCombiner bs);
+	public HashSet<IState> getStatesInTrajectory();
 }

@@ -33,7 +33,7 @@
   <allMachines
       IP="m3"
       UsedMemory="10"
-      MemorySize="10"
+      MemorySize="20"
       CPUNum="1"
       serialNumber="3"
       machineProcesses="//@processes.2"/>

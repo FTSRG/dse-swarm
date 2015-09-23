@@ -98,6 +98,7 @@ public class DFSWithHillClimbingMiniStrategy extends AbstractMiniStrategy {
 					&& !this.statesInTrajectory.contains(dsm.getCurrentState())){
 				System.out.println(actualTran);
 				dsm.undoLastTransformation();
+				System.out.println("undo");
 				return actualTran;
 			}
 			dsm.undoLastTransformation();
@@ -124,7 +125,8 @@ public class DFSWithHillClimbingMiniStrategy extends AbstractMiniStrategy {
 			logger.debug("state: "+ context.getDesignSpaceManager().getCurrentState());
 			searchData.stopCond.newFireTransitionHappend(dsm.getCurrentState());
 			if (this.isAlreadyFoundInThisTrajectory(dsm.getCurrentState())){
-				dsm.undoLastTransformation();
+				searchData.getStrategy().getStatesInTrajectory().remove(dsm.getCurrentState());
+				dsm.undoLastTransformation();				
 				searchData.stopCond.stepBackHappend(dsm.getCurrentState());
 			}
 		

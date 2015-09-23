@@ -67,44 +67,44 @@ public class StartProblem {
 			
 			
 	 }
-	 /*
-	 public StartProblem(){
-		pt= new PassTheRiverclass();
-	 	onlab.Land startPoint =pt.createLand();
-		startPoint.setName("start");
-		onlab.Land targetPoint =pt.createLand();
-		targetPoint.setName("target");
-		startPoint.getNeighbours().add(targetPoint);
-		targetPoint.getNeighbours().add(startPoint);
-		
-		onlab.Driver man = pt.createDriver();
-		man.setName("man");
-		
-		onlab.Passanger cabbage = pt.createPassanger();		
-		cabbage.setName("cabbage");
-		
-		cabbage.setLand(startPoint);
-		man.setLand(startPoint);
-		
-		cabbage.setTarget(targetPoint);
-		man.setTarget(targetPoint);
-		
 
-		//create the boat
-		onlab.Vehichle boat = pt.createVehichles();
-		
-		//add the boat to the lands
-		boat.getLands().add(startPoint);
-		boat.getLands().add(targetPoint);
-		boat.setActualLand(startPoint);
-		boat.setName("boat");
-		boat.setSeats(2);
-		//add the man to the boat
-		man.getDrivingLicences().add(boat);
-		
-		startPoint.getPassangers().add(man);
-		startPoint.getPassangers().add(cabbage);
-	 }*/
+//	 public StartProblem(){
+//		pt= new PassTheRiverclass();
+//	 	onlab.Land startPoint =pt.createLand();
+//		startPoint.setName("start");
+//		onlab.Land targetPoint =pt.createLand();
+//		targetPoint.setName("target");
+//		startPoint.getNeighbours().add(targetPoint);
+//		targetPoint.getNeighbours().add(startPoint);
+//		
+//		onlab.Driver man = pt.createDriver();
+//		man.setName("man");
+//		
+//		onlab.Passanger cabbage = pt.createPassanger();		
+//		cabbage.setName("cabbage");
+//		
+//		cabbage.setLand(startPoint);
+//		man.setLand(startPoint);
+//		
+//		cabbage.setTarget(targetPoint);
+//		man.setTarget(targetPoint);
+//		
+//
+//		//create the boat
+//		onlab.Vehichle boat = pt.createVehichles();
+//		
+//		//add the boat to the lands
+//		boat.getLands().add(startPoint);
+//		boat.getLands().add(targetPoint);
+//		boat.setActualLand(startPoint);
+//		boat.setName("boat");
+//		boat.setSeats(2);
+//		//add the man to the boat
+//		man.getDrivingLicences().add(boat);
+//		
+//		startPoint.getPassangers().add(man);
+//		startPoint.getPassangers().add(cabbage);
+//	 }
 	 
 	 public PassTheRiverclass getpt(){
 		 return this.pt;

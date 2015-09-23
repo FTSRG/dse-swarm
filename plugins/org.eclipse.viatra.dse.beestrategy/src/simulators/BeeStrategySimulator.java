@@ -3,6 +3,7 @@ package simulators;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.AbstractMiniStrategy;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.mainStrategy.AlwaysGoMore;
 import org.eclipse.viatra.dse.mainStrategy.IMainStrategy;
 import org.eclipse.viatra.dse.mainStrategy.OnePatchStrategy;
 import org.eclipse.viatra.dse.stopConditions.CombinedStopCondition;
@@ -33,8 +34,9 @@ public class BeeStrategySimulator {
 		strategyCombiner.setPatchSize(10);
 		strategyCombiner.setSitesnum(2);
 		
+		
 		NumberOfFiredTransitionCondition noft = new NumberOfFiredTransitionCondition();
-		noft.setMaxNumberOfFiredTransitions(100);
+		noft.setMaxNumberOfFiredTransitions(60);
 		SolutionFoundStopCondition sfsc = new SolutionFoundStopCondition();
 		
 		CombinedStopCondition stopConditions = new CombinedStopCondition();
@@ -42,7 +44,7 @@ public class BeeStrategySimulator {
 		stopConditions.addStopCondition(sfsc);
 		
 		strategyCombiner.setMiniStrategyStopCondition(stopConditions);
-		IMainStrategy ms = new OnePatchStrategy();
+		IMainStrategy ms = new AlwaysGoMore();
 		strategyCombiner.setMainStrategy(ms);
 		return strategyCombiner;
 	}

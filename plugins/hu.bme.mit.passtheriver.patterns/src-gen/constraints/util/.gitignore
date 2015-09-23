@@ -70,3 +70,7 @@
 /.PassangerOnLandQuerySpecification.java._trace
 /.PassangerOnVechichleToTargetProcessor.java._trace
 /.PassangerOnVechichleToTargetQuerySpecification.java._trace
+/PassangerOnLandProcessor.java
+/PassangerOnLandQuerySpecification.java
+/PassangerOnVechichleToTargetProcessor.java
+/PassangerOnVechichleToTargetQuerySpecification.java

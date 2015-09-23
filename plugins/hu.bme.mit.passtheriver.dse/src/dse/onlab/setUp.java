@@ -8,6 +8,10 @@ import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
 import org.eclipse.viatra.dse.api.Solution;
 import org.eclipse.viatra.dse.api.Strategies;
 import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
+import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.DFSWithHillClimbingMiniStrategy;
 import org.eclipse.viatra.dse.objectives.IObjective;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
@@ -23,6 +27,7 @@ import dse.problems.StartProblem;
 import dse.transformation.GetIntoBoat;
 import dse.transformation.GetOutOfBoat;
 import dse.transformation.GoToTheOtherPart;
+import simulators.BeeStrategySimulator;
 
 public class setUp {
 	 protected DesignSpaceExplorer dse;
@@ -32,7 +37,8 @@ public class setUp {
 	 protected DSETransformationRule<?, ?> getOutOfVehichle;
 	 protected DSETransformationRule<?, ?> switchLands;
 	 FixedPriorityStrategy fps;
-	// BeeStrategy bs;
+	 StrategyCombiner bs;
+
 	 
 	public void setUpProject() throws IncQueryException{
 		
@@ -50,35 +56,7 @@ public class setUp {
 		 System.out.println("hali");
 		 dse.addObjective(new ModelQueriesHardObjective("MyHardObjective")
 		    .withConstraint(NullPassangerAtWrongPlaceQuerySpecification.instance()));
-		dse.addObjective(new TrajectoryCostSoftObjective("MyTrajectoryCost")
-//				.withActivationCost(getInTheVehichle, new ActivationFitnessProcessor() {
-//					
-//					@Override
-//					public double process(IPatternMatch match) {
-//						// TODO Auto-generated method stub
-//						return 0;
-//					}
-//				})
-//				.withActivationCost(getOutOfVehichle, new ActivationFitnessProcessor() {
-//					
-//					@Override
-//					public double process(IPatternMatch match) {
-//						// TODO Auto-generated method stub
-//						return 0;
-//					}
-//				})
-//				.withActivationCost(switchLands, new ActivationFitnessProcessor() {
-//					
-//					@Override
-//					public double process(IPatternMatch match) {
-//						// TODO Auto-generated method stub
-//						return 0;
-//					}
-//				})
-				.withTrajectoryLengthWeight(5)
-				.withRuleCost(getInTheVehichle, 5)
-				.withRuleCost(getOutOfVehichle, 5)
-				.withRuleCost(switchLands, 5));
+
 		 System.out.println("hali2");
 		 dse.setStateCoderFactory(new OwnSerializerFactory());
 		 System.out.println("hali3");
@@ -93,52 +71,7 @@ public class setUp {
 				 .withConstraint(PassangerOnLandQuerySpecification.instance(), 2)
 				 .withConstraint(PassangerOnVechichleToTargetQuerySpecification.instance(), 1);
 		 dse.addObjective(standingAtTarget);
-		 	 /*	 dse.addGlobalConstraint(new IGlobalConstraint() {
-			
-			@Override
-			public void init(ThreadContext context) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public String getName() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			@Override
-			public IGlobalConstraint createNew() {
-				// TODO Auto-generated method stub
-				return this;
-			}
-			
-			@Override
-			public boolean checkGlobalConstraint(ThreadContext context) {
-				List<ITransition> iti = context.getDesignSpaceManager().getTrajectoryInfo().getFullTransitionTrajectory();
-				int size = iti.size();
-				if (size<2){
-					return true;
-				}
-				ITransition last = iti.get(size-1);
-				if (size<=10){
-					for (int i=0; i<size-1; i++){
-						if (iti.get(i).getId().equals(last.getId())){
-							return false;
-						}
-					}
-				}	
-				else{
-					for (int i=size-10; i<size-1; i++){
-						if (iti.get(i).getId().equals(last.getId())){
-							return false;
-						}
-					}
-				}
-				return true;
-				
-			}
-		});*/
+		 
 		 dse.setMaxNumberOfThreads(2);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
 		 System.out.println("hali");
@@ -152,19 +85,23 @@ public class setUp {
 //		 CreateBeeWithHillClimbing cbwhc = new CreateBeeWithHillClimbing();
 //		 bs.setNeighbourBeeCreator(df);
 //		 bs.setRandomBeeCreator(cbwhc);
-		 System.out.println("hali4");
+	
 		  fps = new FixedPriorityStrategy()
          .withRulePriority(this.getInTheVehichle, 4)
          .withRulePriority(this.getOutOfVehichle, 4)
          .withRulePriority(this.switchLands, 4);
-		 System.out.println("hali");
+		  bs = new StrategyCombiner();
+			BeeStrategySimulator bss = new BeeStrategySimulator(bs);
+		//	SimulatedAnnealingMiniStrategy ministrategy2 = new SimulatedAnnealingMiniStrategy(bs);
+			bss.init(new DFSWithHillClimbingMiniStrategy(bs), new  CreateBeeWithDFS(bs));
+	
 		 
 
 	}
 	public void startProject(){
 		//bs.explore();
-//		dse.startExploration(bs);
-		dse.startExploration(Strategies.createDFSStrategy(24));
+		dse.startExploration(bs);
+	//	dse.startExploration(Strategies.createDFSStrategy(6));
 		//dse.startExploration(fps);
 		//dse.startExploration(bs);
 	}

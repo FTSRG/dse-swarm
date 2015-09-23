@@ -18,5 +18,7 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.apache.log4j,
  org.eclipse.viatra.dse.beestrategy,
  org.eclipse.viatra.dse.beestrategy.createbeestrategy,
+ org.eclipse.viatra.dse.mainStrategy,
  org.eclipse.viatra.dse.stopConditions,
- org.eclipse.viatra.dse.strategySelectors
+ org.eclipse.viatra.dse.strategySelectors,
+ simulators

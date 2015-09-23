@@ -7,18 +7,22 @@ import org.eclipse.incquery.runtime.exception.IncQueryException;
 import org.eclipse.viatra.dse.api.DSETransformationRule;
 import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
 import org.eclipse.viatra.dse.api.Solution;
+import org.eclipse.viatra.dse.api.Strategies;
 import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
 import org.eclipse.viatra.dse.api.strategy.impl.HillClimbingStrategy;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
 import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.DFSWithHillClimbingMiniStrategy;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.RandomHillClimbingMiniStrategy;
+import org.eclipse.viatra.dse.beestrategy.createbeestrategy.SimulatedAnnealingMiniStrategy;
 import org.eclipse.viatra.dse.objectives.ActivationFitnessProcessor;
+import org.eclipse.viatra.dse.objectives.IObjective;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
+import org.eclipse.viatra.dse.objectives.impl.WeightedQueriesSoftObjective;
 import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
-import org.eclipse.viatra.dse.stopConditions.NumberOfFiredTransitionCondition;
 import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;
-import org.eclipse.viatra.dse.strategySelectors.RandomStrategySelector;
 
 import ServerPark.Machines;
 import ServerPark.ServerParkFactory;
@@ -26,9 +30,12 @@ import ServerPark.UsedMachines;
 import hu.bme.mit.incqueryd.dseopt.queries.ChangeProcessLocationMatch;
 import hu.bme.mit.incqueryd.dseopt.queries.StartServerMatch;
 import hu.bme.mit.incqueryd.dseopt.queries.util.FreeMemoryNegativQuerySpecification;
+import hu.bme.mit.incqueryd.dseopt.queries.util.IsProcessAtRightPlaceQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.NotEndStateQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.NotStoppedOrUsedMachinesQuerySpecification;
+import hu.bme.mit.incqueryd.dseopt.queries.util.RunningmachineQuerySpecification;
 import hu.bme.mit.incqueryd.dseopt.queries.util.StoppedAndUsedMachinesQuerySpecification;
+import simulators.BeeStrategySimulator;
 import startproblem.StartProblem;
 import transformations.ChangeProcessLocation;
 import transformations.StartMachine;
@@ -99,7 +106,11 @@ public class SetUp {
 		 dse.addObjective(new ModelQueriesHardObjective("MyHardObjective")
 		 .withConstraint(NotEndStateQuerySpecification.instance()));
 		 
-//		 
+		 IObjective standingAtTarget = new WeightedQueriesSoftObjective()
+				 .withConstraint(RunningmachineQuerySpecification.instance(), 1)
+				 .withConstraint(IsProcessAtRightPlaceQuerySpecification.instance(), 3);
+		 dse.addObjective(standingAtTarget);
+		 //		 
 //		 CostOfChangeProcessLocation costOfChangeProcessLocation = new CostOfChangeProcessLocation();
 //		 CostOfStartComputer costOfStartComputer = new CostOfStartComputer();
 		 
@@ -151,34 +162,17 @@ public class SetUp {
          .withRulePriority(this.stopMachine, 4).withDepthLimit(5);
 		 
 		bs = new StrategyCombiner();
-		RandomStrategySelector selector = new RandomStrategySelector();
-		selector.setStrategies(new CreateBeeWithHillClimbing(bs), new CreateBeeWithDFS(bs));
-		bs.setStrategySelector(selector);
-		bs.setBestSitesNum(2);
-		bs.setEliteBeesNum(2);
-		bs.setEliteSitesNum(1);
-		try {
-			bs.setNumberOfMaxBees(4);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		bs.setOtherBeesNum(1);
-		bs.setPatchSize(1);
-		bs.setSitesnum(2);
-		NumberOfFiredTransitionCondition noft = new NumberOfFiredTransitionCondition();
-		noft.setMaxNumberOfFiredTransitions(1);
-		bs.setMiniStrategyStopCondition(noft);
-		
-		
+		BeeStrategySimulator bss = new BeeStrategySimulator(bs);
+	//	SimulatedAnnealingMiniStrategy ministrategy2 = new SimulatedAnnealingMiniStrategy(bs);
+		bss.init(new CreateBeeWithHillClimbing(bs), new  CreateBeeWithDFS(bs));
 		 
 	}
 	public void startProject(){
-		//dse.startExploration(Strategies.createDFSStrategy(5));
+		//dse.startExploration(Strategies.createDFSStrategy(300));
 		dse.startExploration(bs);
 		//dse.startExploration(fps);
-//		 dse.setSolutionStore(new StrategyDependentSolutionStore());
-//	     dse.startExploration(new HillClimbingStrategy());
+//		 dse.setSolutionStore(new StrategyDependentSolutionStore())
+//         dse.startExploration(new HillClimbingStrategy());
 //	
 	}
 	

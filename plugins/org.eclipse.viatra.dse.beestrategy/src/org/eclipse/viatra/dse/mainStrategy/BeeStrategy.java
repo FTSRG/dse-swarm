@@ -2,6 +2,7 @@ package org.eclipse.viatra.dse.mainStrategy;
 
 import java.util.ArrayList;
 
+import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
 import org.eclipse.viatra.dse.stopConditions.IStopCondition;
@@ -38,7 +39,6 @@ public class BeeStrategy implements IMainStrategy{
 				sc.getBestPatches(sc.getSitesnum());
 				while (sc.isInterrupted() != true) {
 					sc.setIterations(sc.getIterations()+1);
-					System.out.println(sc.isInterrupted());
 					// select best patches, a better patch has a better best bee, the
 					// other bees does not count
 					sc.setBestpatches(sc.getBestPatches(sc.getSitesnum()));
@@ -90,6 +90,27 @@ public class BeeStrategy implements IMainStrategy{
 
 	@Override
 	public void exploreOneThread() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void SearchDataOut(SearchData sc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void SearchDataBack(SearchData sc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void isSolution(SearchTrajectory searchTrajectory) {
 		// TODO Auto-generated method stub
 		
 	}

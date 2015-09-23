@@ -171,6 +171,16 @@ pattern changeProcessLocation(serverpark:UsedMachines, machine1:Machines, machin
 	find endState(serverPark, _, i);
 }
 
+pattern RunningMachines(serverpark: UsedMachines, machine: Machines){
+	UsedMachines.running(serverpark, machine);
+}
+
+
+pattern isProcessAtRightPlace(machine: Machines, process: Process ){
+	Machines.machineProcesses(machine, process);
+	Process.endStateIp(process, machine);
+}
+
 //allokálás
 //leállítás
 //mozgatás

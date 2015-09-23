@@ -22,6 +22,10 @@ public abstract class AbstractMiniStrategy implements IMiniStrategy {
 	protected SearchData searchData;
 	protected HashSet<IState> statesInTrajectory = new HashSet<IState>();
 
+	public HashSet<IState> getStatesInTrajectory() {
+		return statesInTrajectory;
+	}
+
 	protected ThreadContext context;
 	protected DesignSpaceManager dsm;
 	protected boolean interrupted;
