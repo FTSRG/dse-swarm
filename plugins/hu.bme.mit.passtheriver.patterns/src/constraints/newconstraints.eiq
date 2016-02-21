@@ -1,0 +1,13 @@
+package constraints
+
+
+import "hu.bme.mdsd.onlab" 
+import "http://www.eclipse.org/emf/2002/Ecore"
+
+pattern getInto(V:Vehichle, P:Passanger){
+	Vehichle.actualLand.passangers(V,P);
+	Driver.travelOn(_, V);
+	find usedSeats(V, N);
+	Vehichle.seats(V, M);
+	check(M>N);
+}

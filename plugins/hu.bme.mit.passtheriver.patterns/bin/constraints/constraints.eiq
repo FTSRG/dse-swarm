@@ -1,8 +1,9 @@
 package constraints
 
-import "hu.bme.mdsd.onlab" 
+import "hu.bme.mdsd.onlab"
+import "http://www.eclipse.org/emf/2002/Ecore"
 
-pattern allpassangers(P : Passanger) {
+pattern allpassangers(P : Passanger) { 
 	Passanger(P);
 }
 
@@ -72,9 +73,15 @@ pattern NumberOfPassangersOnLand(L: Land, Num){
 	Num == count find passangersOnLand(L, _);
 }
 
+pattern driverGetIntoBoat(V:Vehichle, D:Driver){
+	Vehichle.actualLand.passangers(V,D);
+	find usedSeats(V, N);
+	check(N==0);
+}
 //get into Vehichle
 pattern getInto(V:Vehichle, P:Passanger){
 	Vehichle.actualLand.passangers(V,P);
+	Driver.travelOn(_, V);
 	find usedSeats(V, N);
 	Vehichle.seats(V, M);
 	check(M>N);
@@ -86,6 +93,7 @@ pattern getOut(V: Vehichle, P:Passanger){
 }
 
 //get the boat to the other side
+
 pattern switchLand(V:Vehichle, Start: Land, Cel: Land){
 	Driver.travelOn(_D, V);
 	Vehichle.lands(V, Cel);
@@ -93,8 +101,9 @@ pattern switchLand(V:Vehichle, Start: Land, Cel: Land){
 	Cel!=Start;
 }
 
-@Constraint(location = L1, message = "$P.name$ stayed on two islands at the same time", severity = "warning")
-pattern passangerOnMoreLands(L1: Land, L2: Land, P:Passanger){
+@Constraint(message = "$N$ stayed on two islands at the same time", severity = "warning", key = {"L1", "L2"}, symmetric = {"L1", "L2"})
+pattern passangerOnMoreLands(L1: Land, L2: Land, P:Passanger, N:EString){
+	 Passanger.name(P, N);
 	 Land.passangers(L1, P);
 	 Land.passangers(L2, P);
 	 L1!=L2;
@@ -105,9 +114,11 @@ pattern passangerWithLand(P:Passanger){
 	Passanger.land(P, _);
 }
 
-@Constraint (location = P, severity = "warning", message = "$P.name$ do not have land")
-pattern passangerWithoutLand(P:Passanger){
+@Constraint(message = "$N$ stayed on two islands at the same time", severity = "warning", key = {"P"})
+//@Constraint (location = P, severity = "warning", message = "$P.name$ do not have land")
+pattern passangerWithoutLand(P:Passanger, N:EString){
 	neg find passangerWithLand(P);
+	Passanger.name(P, N);
 }
 
 pattern freeSeatsDec(V: Vehichle, NumOfSeats) {

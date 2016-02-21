@@ -113,16 +113,16 @@ public class Serializer implements IStateCoder{
 		if (match instanceof GetIntoMatch) {
 			GetIntoMatch m = (GetIntoMatch) match;
 			//System.out.println(m.getP().getName()+": "+m.getV().getActualLand().getName()+"->"+m.getV().getName());
-			String s = m.getP().getName()+": "+m.getV().getActualLand().getName()+"->"+m.getV().getName();
+			String s = ((Passanger)m.getP()).getName()+": "+((Vehichle)m.getV()).getActualLand().getName()+"->"+((Vehichle)m.getV()).getName();
 			return s.intern();
         } else if (match instanceof GetOutMatch) {
         	GetOutMatch m = (GetOutMatch) match;
         	//System.out.println(m.getP().getName()+": "+m.getV().getName()+"->"+m.getV().getActualLand().getName());
-           return m.getP().getName()+": "+m.getV().getName()+"->"+m.getV().getActualLand().getName();
+           return ((Passanger)m.getP()).getName()+": "+((Vehichle)m.getV()).getName()+"->"+((Vehichle)m.getV()).getActualLand().getName();
         } else if (match instanceof SwitchLandMatch) {
         	SwitchLandMatch m = (SwitchLandMatch) match;
         	//System.out.println(m.getV().getName()+": "+m.getStart().getName()+"->"+m.getCel().getName());
-           return m.getV().getName()+": "+m.getStart().getName()+"->"+m.getCel().getName();
+           return ((Vehichle)m.getV()).getName()+": "+((Land)m.getStart()).getName()+"->"+((Land)m.getCel()).getName();
        } else {
             throw new DSEException("Unsupported rule.");
         }

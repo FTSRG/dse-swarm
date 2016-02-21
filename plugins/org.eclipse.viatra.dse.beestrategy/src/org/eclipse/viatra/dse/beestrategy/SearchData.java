@@ -2,7 +2,7 @@ package org.eclipse.viatra.dse.beestrategy;
 
 import java.util.ArrayList;
 
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 import org.eclipse.viatra.dse.objectives.Fitness;
 import org.eclipse.viatra.dse.objectives.TrajectoryFitness;

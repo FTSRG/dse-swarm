@@ -3,7 +3,7 @@ package org.eclipse.viatra.dse.mainStrategy;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 
 public class CombinedDFSLocalSearch implements IMainStrategy{
@@ -14,8 +14,7 @@ public class CombinedDFSLocalSearch implements IMainStrategy{
 	@Override
 	public void exploreParalell() {
 		
-		
-	}
+			}
 	@Override
 	public void exploreOneThread() {
 	

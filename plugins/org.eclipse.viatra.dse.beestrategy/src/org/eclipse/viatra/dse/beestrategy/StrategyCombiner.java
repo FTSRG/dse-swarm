@@ -12,7 +12,7 @@ import org.eclipse.viatra.dse.api.strategy.interfaces.IStrategy;
 import org.eclipse.viatra.dse.base.DesignSpaceManager;
 import org.eclipse.viatra.dse.base.ExplorerThread;
 import org.eclipse.viatra.dse.base.ThreadContext;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.IMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.IMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.IState;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
@@ -24,6 +24,8 @@ import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 import org.eclipse.viatra.dse.stopConditions.NumberOfFiredTransitionCondition;
 import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;
 import org.eclipse.viatra.dse.strategySelectors.SearchContext;
+
+import instanceSelector.IInstanceSelector;
 
 public class StrategyCombiner implements IStrategy {
 	public StrategyCombiner() {
@@ -54,11 +56,18 @@ public class StrategyCombiner implements IStrategy {
 	private Integer eliteBeesNum = 1;
 	private IMainStrategy mainStrategy;
 	private IStopCondition mainStrategyStopCondition;
+	private IInstanceSelector nextInstanceSelector;
 	
 
 
-	public IMainStrategy getMainStrategy() {
-		return mainStrategy;
+
+
+	public IInstanceSelector getNextInstanceSelector() {
+		return nextInstanceSelector;
+	}
+
+	public void setNextInstanceSelector(IInstanceSelector nextPatchesSelector) {
+		this.nextInstanceSelector = nextPatchesSelector;
 	}
 
 	private Logger logger = Logger.getLogger(StrategyCombiner.class);
@@ -142,6 +151,7 @@ public class StrategyCombiner implements IStrategy {
 	}
 
 	private void exploreParalell() {
+		logger.debug("paralell explore started");
 		this.rootState = dsm.getCurrentState();
 		this.rootTrajectory = dsm.getTrajectoryInfo();
 		// we have one main thread, and the user can give us the number of the
@@ -263,42 +273,11 @@ public class StrategyCombiner implements IStrategy {
 
 	}
 
+	
+	//TODO törölni a metódust
 	public ArrayList<SearchTrajectory> getBestPatches(Integer sitesnum2) {
 
-		Collections.sort(this.patches, new Comparator<SearchTrajectory>() {
-
-			@Override
-			public int compare(SearchTrajectory o1, SearchTrajectory o2) {
-				return context.getObjectiveComparatorHelper().compare(o1.getOwnfitness(), o2.getOwnfitness());
-			}
-
-		
-
-		});
-
-		this.bestpatches = new ArrayList<SearchTrajectory>();
-		int length = this.bestSitesNum;
-
-		if (bestSitesNum > patches.size())
-			length = patches.size();
-
-		if (this.alwaysnew == false) {
-			for (int i = 0; i < length; i++) {
-				bestpatches.add(patches.get(i));
-				System.out.println("fitness: "+patches.get(i).getOwnfitness());
-
-			}
-		} else {
-			Iterator<SearchTrajectory> it = patches.iterator();
-			while (length > 0 && it.hasNext()) {
-				SearchTrajectory sd = it.next();
-				if (sd.getHasChild() == false) {
-					bestpatches.add(sd);
-					length--;
-				}
-			}
-		}
-
+		this.nextInstanceSelector.selectInstances(this);
 		return bestpatches;
 	}
 

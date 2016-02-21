@@ -24,6 +24,8 @@
         eType="#//Land" eOpposite="#//Land/vehichles"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="actualLand" lowerBound="1"
         eType="#//Land"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="passanger" upperBound="-1"
+        eType="#//Passanger" eOpposite="#//Passanger/travelOn"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Passanger" eSuperTypes="#//Object">
     <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
@@ -31,7 +33,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="dangerousfor" upperBound="-1"
         eType="#//Passanger"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="land" eType="#//Land" eOpposite="#//Land/passangers"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="travelOn" eType="#//Vehichle"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="travelOn" eType="#//Vehichle"
+        eOpposite="#//Vehichle/passanger"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Land" eSuperTypes="#//Object">
     <eStructuralFeatures xsi:type="ecore:EReference" name="neighbours" lowerBound="1"

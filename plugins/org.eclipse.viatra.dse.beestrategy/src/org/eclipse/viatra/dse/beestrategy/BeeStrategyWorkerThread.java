@@ -91,9 +91,9 @@ public class BeeStrategyWorkerThread implements IStrategy {
 					sd = new SearchData();
 					sd.setParentTrajectory(null);
 				}
-				System.out.println(sd.toString());
+				//System.out.println(sd.toString());
 				while (!setNewSearchData(sd));	
-				System.out.println(sd.toString());
+				//System.out.println(sd.toString());
 				//logger.debug("searchData is given back with: "+context.getDesignSpaceManager().getTrajectoryInfo());
 
 			}

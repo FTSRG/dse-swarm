@@ -8,16 +8,21 @@ import org.eclipse.viatra.dse.api.DesignSpaceExplorer;
 import org.eclipse.viatra.dse.api.Solution;
 import org.eclipse.viatra.dse.api.Strategies;
 import org.eclipse.viatra.dse.api.strategy.impl.FixedPriorityStrategy;
+import org.eclipse.viatra.dse.base.ThreadContext;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithDFS;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.DFSWithHillClimbingMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.CreateBeeWithDFS;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.DFSWithHillClimbingMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.SearchRandomTrajectory;
+import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.objectives.IObjective;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesGlobalConstraint;
 import org.eclipse.viatra.dse.objectives.impl.ModelQueriesHardObjective;
 import org.eclipse.viatra.dse.objectives.impl.TrajectoryCostSoftObjective;
 import org.eclipse.viatra.dse.objectives.impl.WeightedQueriesSoftObjective;
 import org.eclipse.viatra.dse.solutionstore.SimpleSolutionStore;
+import org.eclipse.viatra.dse.visualizer.GraphmlDesignSpaceVisualizer;
+import org.eclipse.viatra.dse.visualizer.IDesignSpaceVisualizer;
 
 import constraints.util.DangerousPassangersAtOnePlaceQuerySpecification;
 import constraints.util.NullPassangerAtWrongPlaceQuerySpecification;
@@ -53,20 +58,18 @@ public class setUp {
 		
 		 
 		 //set constraints
-		 System.out.println("hali");
 		 dse.addObjective(new ModelQueriesHardObjective("MyHardObjective")
 		    .withConstraint(NullPassangerAtWrongPlaceQuerySpecification.instance()));
 
-		 System.out.println("hali2");
 		 dse.setStateCoderFactory(new OwnSerializerFactory());
-		 System.out.println("hali3");
+
 		 dse.addTransformationRule(this.getInTheVehichle);
 		 dse.addTransformationRule(this.getOutOfVehichle);
 		 dse.addTransformationRule(this.switchLands);
-		 System.out.println("hali4");
+
 		 dse.addGlobalConstraint(new ModelQueriesGlobalConstraint()
 		  .withConstraint(DangerousPassangersAtOnePlaceQuerySpecification.instance()));
-		 System.out.println("hali5");
+
 		 IObjective standingAtTarget = new WeightedQueriesSoftObjective()
 				 .withConstraint(PassangerOnLandQuerySpecification.instance(), 2)
 				 .withConstraint(PassangerOnVechichleToTargetQuerySpecification.instance(), 1);
@@ -74,7 +77,7 @@ public class setUp {
 		 
 		 dse.setMaxNumberOfThreads(2);
 		 dse.setSolutionStore(new SimpleSolutionStore(1));
-		 System.out.println("hali");
+
 		// bs = new BeeStrategy2();
 //		 bs = new BeeStrategy(3);
 //		 bs.setEliteBeesNum(1);
@@ -86,18 +89,22 @@ public class setUp {
 //		 bs.setNeighbourBeeCreator(df);
 //		 bs.setRandomBeeCreator(cbwhc);
 	
-		  fps = new FixedPriorityStrategy()
-         .withRulePriority(this.getInTheVehichle, 4)
-         .withRulePriority(this.getOutOfVehichle, 4)
-         .withRulePriority(this.switchLands, 4);
+//		  fps = new FixedPriorityStrategy()
+//         .withRulePriority(this.getInTheVehichle, 4)
+//         .withRulePriority(this.getOutOfVehichle, 4)
+//         .withRulePriority(this.switchLands, 4);
 		  bs = new StrategyCombiner();
 			BeeStrategySimulator bss = new BeeStrategySimulator(bs);
 		//	SimulatedAnnealingMiniStrategy ministrategy2 = new SimulatedAnnealingMiniStrategy(bs);
-			bss.init(new DFSWithHillClimbingMiniStrategy(bs), new  CreateBeeWithDFS(bs));
+			//bss.init(new CreateBeeWithDFS(bs), new  DFSWithHillClimbingMiniStrategy(bs));
+			bss.init(new  SearchRandomTrajectory(bs), new  CreateBeeWithDFS(bs));
+			//bss.init(new  CreateBeeWithDFS(bs), new  CreateBeeWithDFS(bs));
+			
+	//TODO		
+	//dse.addDesignSpaceVisulaizer(new GraphmlDesignSpaceVisualizer());
 	
-		 
-
 	}
+	
 	public void startProject(){
 		//bs.explore();
 		dse.startExploration(bs);
@@ -105,6 +112,7 @@ public class setUp {
 		//dse.startExploration(fps);
 		//dse.startExploration(bs);
 	}
+	
 	
 	public void writeOutProject() throws IncQueryException{
 		 Collection<Solution> solutions = dse.getSolutions();

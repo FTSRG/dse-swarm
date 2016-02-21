@@ -11,4 +11,5 @@ public interface IMainStrategy {
 	public void SearchDataOut(SearchData sd);
 	public void SearchDataBack(SearchData sd);
 	public void isSolution(SearchTrajectory searchTrajectory);
+	
 }

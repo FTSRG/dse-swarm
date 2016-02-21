@@ -3,7 +3,7 @@ package org.eclipse.viatra.dse.mainStrategy;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.CreateBeeWithHillClimbing;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.CreateBeeWithHillClimbing;
 import org.eclipse.viatra.dse.stopConditions.IStopCondition;
 import org.eclipse.viatra.dse.strategySelectors.AnnealingStrategySelector;
 import org.eclipse.viatra.dse.strategySelectors.IStrategySelector;

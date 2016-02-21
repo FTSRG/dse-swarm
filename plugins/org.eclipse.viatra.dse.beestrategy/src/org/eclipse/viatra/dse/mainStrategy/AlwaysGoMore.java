@@ -11,8 +11,8 @@ import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 import org.eclipse.viatra.dse.beestrategy.SearchData;
 import org.eclipse.viatra.dse.beestrategy.SearchTrajectory;
 import org.eclipse.viatra.dse.beestrategy.StrategyCombiner;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.ShortenTrajectory;
-import org.eclipse.viatra.dse.beestrategy.createbeestrategy.StepBackMiniStrategy;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.ShortenTrajectory;
+import org.eclipse.viatra.dse.combineStrategies.ministrategy.StepBackMiniStrategy;
 import org.eclipse.viatra.dse.designspace.api.ITransition;
 import org.eclipse.viatra.dse.designspace.api.TrajectoryInfo;
 
@@ -35,6 +35,7 @@ public class AlwaysGoMore implements IMainStrategy {
 
 	@Override
 	public void exploreParalell() {
+		sc.getLogger().debug("stopcond "+sc.getMiniStrategyStopCondition());
 		sc.createRandomBee(sc.getMiniStrategyStopCondition());
 		sc.increasenumberOfActiveBees();
 		while (sc.getInstancesToBeChecked().isEmpty()) {
